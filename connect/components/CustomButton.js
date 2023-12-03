@@ -13,7 +13,7 @@ const CustomButton = ({ title, onPress, textColor }) => {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#ffff',
+    backgroundColor: 'black',
     borderRadius: 20, 
     alignItems: 'center',
     justifyContent: 'center',
