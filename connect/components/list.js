@@ -2,70 +2,107 @@ import React, { useState, useEffect } from 'react';
 import { FlatList, ActivityIndicator, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import jwt_decode from 'jwt-decode';
+import {jwtDecode} from "jwt-decode";
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
-const retrieveToken = async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
 
-    if (token) {
-      console.log('Token retrieved successfully');
-      const decodedToken = jwt_decode(token);
-      const { id } = decodedToken;
-      console.log(id);                                         
-      return id;
-    } else {
-      console.log('Token not found');
-      return null;
-    }
-  } catch (error) {
-    console.error('Failed to retrieve token', error);
-    return null;
-  }
-};
-useEffect(() => {
-  const fetchData = async () => {
-    const id = await retrieveToken();
-    console.log(id);
-    setId(id);
-  };
-  fetchData();
-}, []);
 
-const fetchCustomerDetails = (customerId) => {
-  const url = `https://your-backend-url/api/customers/${customerId}`;
-
-  axios
-    .get(url)
-    .then(response => {
-      const customerData = response.data;
-      const { name, location } = customerData;
-      console.log('Customer Details:', { name, location });
-      // navigation.navigate('', { name, id: customerId, location });
-    })
-    .catch(error => {
-      console.log('Error fetching customer details:', error);
-    });
-};
-
-const handleCustomerSelection = (customerId) => {
-  fetchCustomerDetails(customerId);
-};
+// import { useNavigation } from '@react-navigation/native';
 
 
 const CustomerListPage = () => {
   // Dummy data for demonstration
-  const customerData = [
-    { id: '1', name: 'Customer 1', location: 'Location 1' },
-    { id: '2', name: 'Customer 2', location: 'Location 2' },
-    { id: '3', name: 'Customer 3', location: 'Location 3' },
-    // Add more customer data as needed
-  ];
+  // const customerData = [
+  //   { id: '1', name: 'Customer 1', location: 'Location 1' },
+  //   { id: '2', name: 'Customer 2', location: 'Location 2' },
+  //   { id: '3', name: 'Customer 3', location: 'Location 3' },
+  //   // Add more customer data as needed
+  // ];
+  const[customerData,setCustomerData]=useState([])
+
+
+  const [userId, setUserId] = useState(null);
+
+  const retrieveToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+
+      if (token) {
+        console.log('Token retrieved successfully');
+        const decodedToken = jwtDecode(token);
+        console.log(decodedToken);
+        console.log('Token Expiry:', new Date(decodedToken.exp * 1000)); // Convert to milliseconds
+
+        const { userId, username } = decodedToken;
+
+        return { userId, username };
+      } else {
+        console.log('Token not found');
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to retrieve token', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { userId, username } = await retrieveToken();
+      setUserId(userId);
+    };
+    fetchData();
+  }, []);
+
+
+console.log(userId,"3456")
+
+// const fetchCustomerDetails = (userId) => {
+//   console.log(2345678)
+//   const url = `https://connect-q46w.onrender.com/emp/requests/${userId}`;
+
+//   axios
+//     .get(url)
+//     .then(response => {
+//       console.log(response)
+//       const customerData = response.data;
+//       const { name, location } = customerData;
+//       console.log('Customer Details:', { name, location });
+//       // navigation.navigate('', { name, id: customerId, location });
+//     })
+//     .catch(error => {
+//       console.log('Error fetching customer details:', error);
+//     });
+// };
+
+useEffect(() => {
+  const fetchData = async () => {
+    const { userId, username } = await retrieveToken();
+    if (userId) {
+      try {
+        const response = await axios.get(
+          `https://connect-q46w.onrender.com/emp/requests/${userId}`
+        );
+        console.log(response.data)
+        const fetchedCustomerData = response.data;
+        console.log(fetchedCustomerData)
+        setCustomerData(fetchedCustomerData);
+      } catch (error) {
+        console.error('Error fetching customer data:', error);
+      }
+    }
+  };
+
+  fetchData();
+}, []);
+
+
+console.log(customerData)
+
   const navigation = useNavigation();
   const handleHomePress = () => {
-    navigation.navigate('list');
+    navigation.navigate('messages');
   };
   const handleHistoryPress = () => {
     navigation.navigate('history');
@@ -77,6 +114,7 @@ const CustomerListPage = () => {
   const handleCustomerSelection = (customerId) => {
     // Implement customer selection logic here
     console.log('Selected customer:', customerId);
+    fetchCustomerDetails(customerId);
     // You can navigate to another screen or perform other actions
   };
 
@@ -85,10 +123,25 @@ const CustomerListPage = () => {
       style={styles.customerItem}
       onPress={() => handleCustomerSelection(item.id)}
     >
-      <Text style={styles.customerName}>{item.name}</Text>
+      <Text style={styles.customerName}>{item.username}</Text>
       <Text style={styles.customerLocation}>{item.location}</Text>
+      <Text style={styles.customerLocation}>{item.address}</Text>
+      <Text style={styles.customerLocation}>{item.phone}</Text>
+      
+
     </TouchableOpacity>
   );
+
+  // const renderActivityItem = ({ item }) => (
+    
+  //   <View style={styles.activityItem}>
+    
+  //     <Text>User: {item.user.username}</Text>
+      
+  //     <Text>Amount : {item.amount}</Text>
+      
+  //   </View>
+  // );
 
   return (
    
@@ -128,10 +181,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white', // Background color
     padding: 20,
-    width:400,
+    width:375,
     // justifyContent: 'center',
       alignItems: 'center',
-      left:500,
+      left:0,
 
       
       
@@ -149,7 +202,7 @@ const styles = StyleSheet.create({
   },
     headingContainer: {
       position: 'absolute',
-      width: 390,
+      width: 370,
       height: 40,
      
       top: 2,

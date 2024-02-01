@@ -52,7 +52,7 @@ const MyScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.headingContainer}>
-        <Text style={styles.heading}>customer1</Text>
+        <Text style={styles.heading}>Customer1</Text>
        
       </View>
       
@@ -96,8 +96,9 @@ const MyScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    // alignItems: 'center',
     backgroundColor: '#F5F5F5',
+    left:2,
   },
   headingContainer: {
     position: 'absolute',
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     height: 40,
     left: 500,
     top: 0,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'black',
     justifyContent: 'center',
     // alignItems: 'center',
   },
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   heading: {
-    color: 'black',
+    color: 'white',
     fontSize: 20,
     // fontWeight: 'bold',
   },

@@ -14,7 +14,7 @@ const CustomButton = ({ title, onPress, textColor }) => {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: 'black',
-    borderRadius: 20, 
+    borderRadius: 8, 
     alignItems: 'center',
     justifyContent: 'center',
     height:50,
@@ -22,8 +22,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {  
     fontStyle: 'normal',
-    fontSize: 28, 
-    fontWeight:500
+    fontSize: 18, 
+    fontWeight:400
   },
 });
 

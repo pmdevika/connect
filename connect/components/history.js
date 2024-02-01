@@ -1,19 +1,74 @@
-import React from 'react';
-import { FlatList } from 'react-native';
-
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { FlatList, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 
 const CustomerListPage = () => {
-  // Dummy data for demonstration
-  const customerData = [
-    { id: '1', name: 'Customer 1', location: 'Location 1', amountPaid: 100 },
-    { id: '2', name: 'Customer 2', location: 'Location 2', amountPaid: 150 },
-    { id: '3', name: 'Customer 3', location: 'Location 3', amountPaid: 120 },
-    // Add more customer data as needed
-  ];
+  const [activityHistory, setActivityHistory] = useState([]);
+  const [userId, setUserId] = useState(null);
   const navigation = useNavigation();
+
+  const retrieveToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+
+      if (token) {
+        console.log('Token retrieved successfully');
+        const decodedToken = jwtDecode(token);
+        console.log(decodedToken);
+        console.log('Token Expiry:', new Date(decodedToken.exp * 1000)); // Convert to milliseconds
+
+        const { userId, username } = decodedToken;
+
+        return { userId, username };
+      } else {
+        console.log('Token not found');
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to retrieve token', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { userId, username } = await retrieveToken();
+      setUserId(userId);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { userId, username } = await retrieveToken();
+  
+      if (userId) {
+        try {
+          const response = await fetch(
+           ` https://connect-q46w.onrender.com/appointment/appointments-history/${userId}`
+          );
+          const history = await response.json();
+          console.log(history);
+          setActivityHistory(history);
+        } catch (error) {
+          console.error('Error fetching activity history:', error);
+        }
+      } else {
+        console.log('User ID is null or undefined');
+      }
+    };
+  
+    fetchData();
+  }, [userId]);
+
+  useEffect(() => {
+    console.log("Updated activity history in useEffect:", activityHistory);
+  }, [activityHistory]);
+  
   const handleHomePress = () => {
     navigation.navigate('list');
   };
@@ -23,22 +78,16 @@ const CustomerListPage = () => {
   const handleProfilePress = () => {
     navigation.navigate('profile');
   };
-
-  const handleCustomerSelection = (customerId) => {
-    // Implement customer selection logic here
-    console.log('Selected customer:', customerId);
-    // You can navigate to another screen or perform other actions
-  };
-
-  const renderCustomerItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.customerItem}
-      onPress={() => handleCustomerSelection(item.id)}
-    >
-      <Text style={styles.customerName}>{item.name}</Text>
-      <Text style={styles.customerAmount}>Amount Paid: ${item.amountPaid}</Text>
-      <Text style={styles.customerLocation}>Location: {item.location}</Text>
-    </TouchableOpacity>
+  console.log(567)
+  const renderActivityItem = ({ item }) => (
+    
+    <View style={styles.activityItem}>
+    
+      <Text>User: {item.user.username}</Text>
+      
+      <Text>Amount : {item.amount}</Text>
+      
+    </View>
   );
 
   return (
@@ -48,11 +97,12 @@ const CustomerListPage = () => {
       </View>
       <View style={styles.listing}>
         <FlatList
-          data={customerData}
-          keyExtractor={(item) => item.id}
-          renderItem={renderCustomerItem}
+          data={activityHistory}
+          keyExtractor={(item) => item._id.toString()}
+          renderItem={renderActivityItem}
         />
       </View>
+      
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
@@ -73,9 +123,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     padding: 20,
-    width: 400,
+    width: 375,
     alignItems: 'center',
-    left: 500,
+    left:0,
   },
   listing: {
     top: 50,
@@ -88,7 +138,7 @@ const styles = StyleSheet.create({
   },
   headingContainer: {
     position: 'absolute',
-    width: 390,
+    width: 370,
     height: 40,
     top: 2,
     backgroundColor: 'black',
@@ -115,7 +165,7 @@ const styles = StyleSheet.create({
     height: 39,
     position: 'absolute',
     bottom: 10,
-    
+
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
     overflow: 'hidden',
@@ -127,7 +177,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 
-  customerItem: {
+  activityItem: {
     backgroundColor: '#fffff9',
     borderRadius: 8,
     padding: 16,
@@ -140,21 +190,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  customerName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'black',
-  },
-  customerAmount: {
-    fontSize: 14,
-    color: 'black',
-    marginTop: 8,
-  },
-  customerLocation: {
-    fontSize: 14,
-    color: 'black',
-    marginTop: 8,
   },
 });
 

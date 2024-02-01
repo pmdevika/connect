@@ -10,12 +10,13 @@ import { useNavigation } from '@react-navigation/native';
 const WorkerDetailsPage = () => {
   // Dummy worker data for demonstration
   const workerData = {
-    name: 'John Doe',
+    name: 'jay',
     age: 30,
-    email: 'john.doe@example.com',
+    email: 'jay@123',
     phone: '+1234567890',
-    id: 'W12345',
-    experience: '5 years',
+    id: 'emp2',
+    experience: '1 year',
+    Profession:'Electrician'
   };
   const navigation = useNavigation();
   const handleHomePress = () => {
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#FFFFFF',
-    width:400,
+    width:375,
   },
   detailItem: {
     flexDirection: 'row',
@@ -93,9 +94,9 @@ const styles = StyleSheet.create({
   },
   headingContainer: {
     position: 'absolute',
-    width: 390,
+    width: 370,
     height: 40,
-   
+   left:5,
     top: 2,
     bottom:100,
     backgroundColor: 'black',
