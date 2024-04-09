@@ -93,8 +93,8 @@ useEffect(() => {
 console.log("customerdata",customerData)
 
   const navigation = useNavigation();
-  const handlependinglistPress = () => {
-    navigation.navigate('pendinglist');
+  const handleHomePress = () => {
+    navigation.navigate('list');
   };
   const handleHistoryPress = () => {
     navigation.navigate('map');
@@ -131,7 +131,7 @@ console.log("customerdata",customerData)
         style={styles.chatButton}
        
       >
-        <Text style={styles.chatButtonText}>Chat</Text>
+        <Text style={styles.chatButtonText}>Request for Payment</Text>
       </TouchableOpacity>
    
 
@@ -154,7 +154,7 @@ console.log("customerdata",customerData)
    
     <View style={styles.container}>
      <View style={styles.headingContainer}>
-        <Text style={styles.heading}>Customers List</Text>
+        <Text style={styles.heading}>Pending Works</Text>
       </View>
       <View style={styles.listing}>
       <FlatList
@@ -165,7 +165,7 @@ console.log("customerdata",customerData)
       </View>
     {/* {customerData.users?.map(item=>(<Text>{item.username}</Text>))} */}
       <View style={styles.navbar}>
-        <TouchableOpacity style={styles.navbarButton} onPress={handlependinglistPress}>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>

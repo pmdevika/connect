@@ -82,9 +82,9 @@ const MyScreen = () => {
         <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
+        {/* <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
           <Ionicons name="activity-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={20} color="#FFFFFF" />
         </TouchableOpacity>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FlatList, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jwtDecode } from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 
@@ -17,12 +17,13 @@ const CustomerListPage = () => {
 
       if (token) {
         console.log('Token retrieved successfully');
-        const decodedToken = jwtDecode(token);
+        const decodedToken = jwt_decode(token);
         console.log(decodedToken);
         console.log('Token Expiry:', new Date(decodedToken.exp * 1000)); // Convert to milliseconds
 
         const { userId, username } = decodedToken;
-
+        console.log("history page")
+        console.log("decoded token")
         return { userId, username };
       } else {
         console.log('Token not found');
@@ -107,9 +108,9 @@ const CustomerListPage = () => {
         <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
+        {/* <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
           <Ionicons name="activity-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={20} color="#FFFFFF" />
         </TouchableOpacity>

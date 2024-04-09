@@ -1,39 +1,39 @@
-import React from 'react';
-import { FlatList } from 'react-native';
-
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput } from 'react-native';
-import { MaterialIcons,Ionicons  } from '@expo/vector-icons';
-// import Popover from 'react-native-popover-view';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 
-
 const WorkerDetailsPage = () => {
-  // Dummy worker data for demonstration
-  const workerData = {
-    name: 'jay',
-    age: 30,
-    email: 'jay@123',
-    phone: '+1234567890',
-    id: 'emp2',
-    experience: '1 year',
-    Profession:'Electrician'
-  };
+  const [workerData, setWorkerData] = useState({});
   const navigation = useNavigation();
+
   const handleHomePress = () => {
     navigation.navigate('list');
   };
-  const handleHistoryPress = () => {
-    navigation.navigate('history');
-  };
+
   const handleProfilePress = () => {
     navigation.navigate('profile');
   };
 
+  useEffect(() => {
+    const fetchWorkerDetails = async () => {
+      try {
+        const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/workerDetails`); // Replace with your API endpoint
+        const fetchedWorkerData = response.data;
+        setWorkerData(fetchedWorkerData);
+      } catch (error) {
+        console.error('Error fetching worker data:', error);
+      }
+    };
+
+    fetchWorkerDetails();
+  }, []);
+
   return (
     <View style={styles.container}>
-    <View style={styles.headingContainer}>
+      <View style={styles.headingContainer}>
         <Text style={styles.heading}>Personal Details</Text>
-       
       </View>
       <View style={styles.detailItem}>
         <Text style={styles.label}>Name:</Text>
@@ -59,12 +59,13 @@ const WorkerDetailsPage = () => {
         <Text style={styles.label}>Experience:</Text>
         <Text style={styles.value}>{workerData.experience}</Text>
       </View>
+      <View style={styles.detailItem}>
+        <Text style={styles.label}>Profession:</Text>
+        <Text style={styles.value}>{workerData.Profession}</Text>
+      </View>
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
-          <Ionicons name="activity-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={20} color="#FFFFFF" />
@@ -74,12 +75,13 @@ const WorkerDetailsPage = () => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
     backgroundColor: '#FFFFFF',
-    width:375,
+    width:460,
   },
   detailItem: {
     flexDirection: 'row',
@@ -89,14 +91,14 @@ const styles = StyleSheet.create({
   },
   heading: {
     color: 'white',
-    fontSize: 20,
+    fontSize: 10,
      fontWeight: 'bold',
   },
   headingContainer: {
     position: 'absolute',
-    width: 370,
+    width: 455,
     height: 40,
-   left:5,
+   left:3,
     top: 2,
     bottom:100,
     backgroundColor: 'black',
@@ -120,10 +122,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     backgroundColor: 'black',
-    width: 350,
-    height: 39,
+    width: 460,
+    height: 50,
     position: 'absolute',
-    bottom: 10,
+    bottom: 6,
     
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    padding: 1,
   },
 });
 

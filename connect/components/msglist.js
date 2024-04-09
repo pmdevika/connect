@@ -5,7 +5,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import socket from '../utils/socket';
 
 
 
@@ -14,7 +13,13 @@ import socket from '../utils/socket';
 
 
 const CustomerListPage = () => {
-
+  // Dummy data for demonstration
+  // const customerData = [
+  //   { id: '1', name: 'Customer 1', location: 'Location 1' },
+  //   { id: '2', name: 'Customer 2', location: 'Location 2' },
+  //   { id: '3', name: 'Customer 3', location: 'Location 3' },
+  //   // Add more customer data as needed
+  // ];
   const[customerData,setCustomerData]=useState([])
 
 
@@ -73,8 +78,8 @@ useEffect(() => {
     const { userId, username } = await retrieveToken();
     if (userId) {
       try {
-        const response = await axios.post(
-          `${process.env.EXPO_PUBLIC_API_URL}/emp/chats/users`,{workerId:userId}
+        const response = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/emp/requests/${userId}`
         );
         console.log(response.data)
         const fetchedCustomerData = response.data;
@@ -93,28 +98,23 @@ useEffect(() => {
 console.log("customerdata",customerData)
 
   const navigation = useNavigation();
-  const handlependinglistPress = () => {
-    navigation.navigate('pendinglist');
+  const handleHomePress = () => {
+    navigation.navigate('messages');
   };
   const handleHistoryPress = () => {
-    navigation.navigate('map');
+    navigation.navigate('history');
   };
   const handleProfilePress = () => {
     navigation.navigate('profile');
   };
-  const handlechat = (_id) => {
-    console.log("Id is",_id)
- 
-    navigation.navigate('bidding',{workerId:_id});
+  const handlechat = () => {
+    navigation.navigate('bid',{userId});
   };
 
   const handleCustomerSelection = (customerId) => {
     // Implement customer selection logic here
     console.log('Selected customer:', customerId);
-    socket.emit("createRoom", "65f0a7b6b31b36103dd42af6");
-    // fetchCustomerDetails(customerId);
-    // console.log(567)
-    navigation.navigate('bidding', {workerId:customerId});
+    fetchCustomerDetails(customerId);
     // You can navigate to another screen or perform other actions
   };
 
@@ -125,13 +125,12 @@ console.log("customerdata",customerData)
     >
       <Text style={styles.customerName}>{item.username}</Text>
       {/* <Text style={styles.customerLocation}>{item.location}</Text> */}
-      <Text style={styles.customerLocation}>{item.address}</Text>
-      <Text style={styles.customerLocation}>{item.phone}</Text>
+     
       <TouchableOpacity
         style={styles.chatButton}
-       
+        onPress={handlechat}
       >
-        <Text style={styles.chatButtonText}>Chat</Text>
+        <Text style={styles.chatButtonText}>Show more chat</Text>
       </TouchableOpacity>
    
 
@@ -154,7 +153,7 @@ console.log("customerdata",customerData)
    
     <View style={styles.container}>
      <View style={styles.headingContainer}>
-        <Text style={styles.heading}>Customers List</Text>
+        <Text style={styles.heading}>Message History</Text>   
       </View>
       <View style={styles.listing}>
       <FlatList
@@ -165,7 +164,7 @@ console.log("customerdata",customerData)
       </View>
     {/* {customerData.users?.map(item=>(<Text>{item.username}</Text>))} */}
       <View style={styles.navbar}>
-        <TouchableOpacity style={styles.navbarButton} onPress={handlependinglistPress}>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>

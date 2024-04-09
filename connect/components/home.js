@@ -3,6 +3,8 @@ import { StyleSheet, TextInput, View, TouchableOpacity, Text,Image } from 'react
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import {jwtDecode} from 'jwt-decode';
+import "core-js/stable/atob";
 
 export default function Login() {
   const [empid, setEmpid] = useState('');
@@ -42,36 +44,42 @@ export default function Login() {
       const token = await AsyncStorage.getItem('token');
       // const userId = await AsyncStorage.getItem('userId');
       // const username = await AsyncStorage.getItem('username');
+      console.log(token)
       if (token) {
         console.log('Token retrieved successfully');
-        return token;
+        const decodedToken = jwtDecode(token);
+        console.log(decodedToken);
+        console.log('Token Expiry:', new Date(decodedToken.exp * 1000)); // Convert to milliseconds
+
+        const { userId, username } = decodedToken;
+        console.log("home page")
+        console.log(decodedToken)
+        return { userId, username };
       } else {
         console.log('Token not found');
-        return null;
       }
     } catch (error) {
-      console.error('Failed to retrieve token', error);
-      return null;
+      console.error('Failed to decode token', error);
     }
   };
 
-  const removeToken = async () => {
-    try {
-      await AsyncStorage.removeItem('token');
-      console.log('Token removed successfully');
-    } catch (error) {
-      console.error('Failed to remove token', error);
-    }
-  };
+  // const removeToken = async () => {
+  //   try {
+  //     await AsyncStorage.removeItem('token');
+  //     console.log('Token removed successfully');
+  //   } catch (error) {
+  //     console.error('Failed to remove token', error);
+  //   }
+  // };
 
  
   const handleButtonPress = () => {
-    const url = 'https://connect-q46w.onrender.com/emp/login';
-  
+    const url = `${process.env.EXPO_PUBLIC_API_URL}/emp/login`;
+    console.log({
+      empid,password
+    })
     const request = axios.post(url, {
       empid,password
-      // Include any data you need to send in the request body
-      // For example: { username: 'yourUsername', password: 'yourPassword' }
     });
   
     console.log('Request:', request);
@@ -80,12 +88,10 @@ export default function Login() {
       .then(response => {
         // Handle the successful response
         console.log('Response:', response.data);
-        console.log(123);
         const token=response.data.token;
         storeToken(token)
         console.log("token stored")
         const data=retrieveToken();
-       
         console.log(data)
         navigation.navigate('list');
       })
@@ -135,7 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white', // Black background color
     alignItems: 'center',
     justifyContent: 'center',
-    width:375,
+    width:460,
   },
   label: {
     borderWidth: 2,
