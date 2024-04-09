@@ -10,6 +10,12 @@ import History from './components/history';
 import Messages from './components/message';
 import GetStarted from './components/getstarted';
 import profile from './components/profile'
+import bidding from './components/bidding';
+import modal from './components/Modal';
+import bid from './components/bid';
+import msglist from './components/msglist';
+import map from './components/Map';
+import pendinglist from './components/PendingList'
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +29,12 @@ export default function App() {
         <Stack.Screen name="history" component={History} options={{ title: '' }} />
         <Stack.Screen name="profile" component={profile} options={{ title: '' }} />
         <Stack.Screen name="messages" component={Messages} options={{ title: '' }} />
+        <Stack.Screen name="bidding" component={bidding} options={{ title: '' }} />
+        <Stack.Screen name="modal" component={modal} options={{ title: '' }} />
+        <Stack.Screen name="bid" component={bid} options={{ title: '' }} />
+        <Stack.Screen name="msglist" component={msglist} options={{ title: '' }} />
+        <Stack.Screen name="map" component={map} options={{ title: '' }} />
+        <Stack.Screen name="pendinglist" component={pendinglist} options={{ title: '' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
