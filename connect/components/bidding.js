@@ -23,7 +23,8 @@ const Bidding = ({ route }) => {
   const [roomId, setRoomId] = useState('');
   const [uname, setuName] = useState('');
   const [messages, setMessages] = useState([]);
-  const [accepted,setAccepted]=useState(false);
+  const [useraccepted,setUserAccepted]=useState(false);
+  const [selfaccepted,setSelfAccepted]=useState(false);
   const [label, setLabel] = useState("");
   const [timer, setTimer] = useState(300);
   const [amount, setAmount] = useState(""); 
@@ -58,18 +59,6 @@ const Bidding = ({ route }) => {
     fetchData();
   }, []);
 
-
-  // useEffect(() => {
-  //   console.log("Hey")
-  //   socket.on('room', (message) => {
-  //     console.log(message)
-  //   })
-  //   socket.on('newMessage', (message) => {
-  //     console.log('Received message in the room:', message);
-  //     // Handle the received message, e.g., display it in the UI
-  //   });
-  // }, [socket])
-
   useEffect(() => {
     console.log("Hey from socket");
     socket.on('newMessage', (newMessage) => {
@@ -81,6 +70,20 @@ const Bidding = ({ route }) => {
     // Cleanup function to unsubscribe from socket
     return () => {
       socket.off('newMessage');
+    };
+  }, []);
+
+
+  useEffect(() => {
+    socket.on('accepted', (BidData) => {
+      console.log('Bid accepted', BidData);
+      setUserAccepted(true);
+      setLabel(BidData.amount);
+    });
+
+    // Cleanup function to unsubscribe from socket
+    return () => {
+      socket.off('accepted');
     };
   }, []);
 
@@ -115,6 +118,7 @@ const Bidding = ({ route }) => {
     // Implement your logic for closing bid here
     
   };
+
   const getCurrentTime = () => {
     const date = new Date();
     const hours = date.getHours();
@@ -142,13 +146,13 @@ const Bidding = ({ route }) => {
     }
 
   };
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer((prevTimer) => prevTimer - 1);
-    }, 1000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setTimer((prevTimer) => prevTimer - 1);
+  //   }, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const handleCreateRoom = () => {
     console.log({ amount });
@@ -162,7 +166,7 @@ const Bidding = ({ route }) => {
   const [visible, setVisible] = useState(false);
 
   const handleAccept=(amt,id)=>{
-    setAccepted(true);
+    setSelfAccepted(true);
     setLabel(amt);
     const currentTime = getCurrentTime();
     const BidData = {
@@ -175,7 +179,7 @@ const Bidding = ({ route }) => {
     // Emit the bid message via socket
     socket.emit('accept', { room_id: roomId, BidData } );
 
-    console.log(accepted);
+    console.log(selfaccepted);
     setVisible(false);
   }
 
@@ -218,7 +222,7 @@ return (
   <View style={styles.container}>
     <View style={styles.head}>
       <Text style={styles.heading}>Chat With {uname}</Text>
-      <TouchableOpacity style={styles.sendButton} onPress={() => setVisible(true) } disabled={accepted} >
+      <TouchableOpacity style={styles.sendButton} onPress={() => setVisible(true) } disabled={selfaccepted||useraccepted} >
         <Text style={styles.sendButtonText}>Bid</Text>
       </TouchableOpacity>
     </View>
@@ -229,7 +233,7 @@ return (
       </View> */}
 
       {
-        accepted &&     
+        useraccepted &&     
         <View style={styles.popuplabelContainer}>
         <Text style={styles.whiteText}>user accepted the Request</Text>
         <Text style={styles.labelText}> {label}</Text>      
@@ -243,6 +247,23 @@ return (
         </View>        
       </View>
       
+      }
+
+      {
+        selfaccepted &&
+        <View style={styles.popuplabelContainer}>
+          <Text style={styles.whiteText}>You accepted the Request</Text>
+          <Text style={styles.labelText}> {label}</Text>
+          <View style={styles.acceptRejectContainer}>
+            <Pressable style={styles.acceptButton} onPress={handleConfirm}>
+              <Text style={styles.modaltext1} >CONFIRM</Text>
+            </Pressable>
+            <Pressable style={styles.acceptButton} onPress={handleReject}>
+              <Text style={styles.modaltext1}>CLOSE</Text>
+            </Pressable>
+          </View>
+        </View>
+
       }
 
       <ScrollView style={styles.chatContainer}>
@@ -268,10 +289,10 @@ return (
                     Timer: {Math.floor(timer / 60)}:{timer % 60 < 10 ? '0' : ''}{timer % 60}
                   </Text>
                   <View style={styles.acceptRejectContainer}>
-                    <Pressable style={styles.acceptButton} onPress={closeBid}>
+                    <Pressable style={styles.acceptButton} onPress={()=>handleAccept(msg.content.bidAmount,msg._id)}>
                       <Text style={styles.modaltext}>ACCEPT</Text>
                     </Pressable>
-                    <Pressable style={styles.rejectButton} onPress={closeBid}>
+                    <Pressable style={styles.rejectButton} onPress={handleReject}>
                       <Text style={styles.modaltext}>REJECT</Text>
                     </Pressable>
                   </View>
@@ -302,24 +323,6 @@ return (
                   <Text style={styles.modaltext}>CANCEL</Text>
               </Pressable>
           </View>
-          
-          {/* {label !== "" && (
-
-              <View style={styles.labelContainer}>
-                  <Text style={styles.labelText}>{label}</Text>
-                  <Text style={styles.timerText}>
-                      Timer: {Math.floor(timer / 60)}:{timer % 60 < 10 ? '0' : ''}{timer % 60}
-                  </Text>
-                  <View style={styles.acceptRejectContainer}>
-                      <Pressable style={styles.acceptButton} onPress={closeModal}>
-                          <Text style={styles.modaltext}>ACCEPT</Text>
-                      </Pressable>
-                      <Pressable style={styles.rejectButton} onPress={closeModal}>
-                          <Text style={styles.modaltext}>REJECT</Text>
-                      </Pressable>
-                  </View>
-              </View>
-          )} */}
       </View>
       : ""}
 
