@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button,Pressable } from 'react-native';
 import MapView, { UrlTile, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import axios from 'axios';
@@ -44,6 +44,8 @@ export default function App() {
       };
       fetchData();
     }, []);
+
+    
 
     // const retrieveToken = async () => {
     //     try {
@@ -98,6 +100,12 @@ export default function App() {
                 setMarkerPosition({
                     latitude: currentLocation.coords.latitude,
                     longitude: currentLocation.coords.longitude,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                });
+                setMarkerPosition({
+                    latitude: currentLocation.coords.latitude,
+                    longitude: currentLocation.coords.longitude,
                 });
                 console.log("1", markerPosition);
             } catch (error) {
@@ -119,8 +127,9 @@ export default function App() {
     }
 
     const handleMarkerPress = (e) => {
-        console.log(e.nativeEvent.coordinate);
+        console.log("pressed",e.nativeEvent.coordinate);
         setMarkerPosition(e.nativeEvent.coordinate);
+        handleLocationUpdate();
     };
 
     useEffect(() => {
@@ -131,8 +140,9 @@ export default function App() {
 
                 if (markerPosition) {
                     const loc_address = await fetchAddress(markerPosition)
+                    updateGlobalState({address:loc_address})
                     const requestBody = {
-                        _id: userId,
+                        userId: uid,
                         location: {
                             latitude: markerPosition.latitude,
                             longitude: markerPosition.longitude,
@@ -219,6 +229,8 @@ export default function App() {
             </View>
             <Text style={styles.paragraph}>{"You are at "+JSON.stringify(markerPosition)}</Text>
         </View>
+
+        
     );
 }
 
@@ -245,4 +257,5 @@ const styles = StyleSheet.create({
         fontSize: 18,
         textAlign: 'center',
     },
+   
 });

@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect,useRef } from 'react';
+import { Modal ,View, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput, ScrollView, Pressable } from 'react-native';
+// import {Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput, ScrollView, Pressable } 
 import { MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode";
 
 import { useNavigation } from '@react-navigation/native';
-import Modal from "./Modal";
+// import Modal from "./Modal";
 import socket from "../utils/socket";
 
 const { width } = Dimensions.get('window');
 
 const Bidding = ({ route }) => {
+  const scrollViewRef = useRef();
   const { workerId } = route.params;
+  const [componentMounted, setComponentMounted] = useState(false);
   console.log(workerId)
   const navigation = useNavigation();
   const [userId, setUserId] = useState('');
@@ -29,7 +32,10 @@ const Bidding = ({ route }) => {
   const [timer, setTimer] = useState(300);
   const [amount, setAmount] = useState(""); 
   const [sub, setSub] = useState(false);
+  const [status, setStatus] = useState(-1);
   const generateID = () => Math.random().toString(36).substring(2, 10);
+  const [showMessage, setShowMessage] = useState(false);
+
 
   const retrieveToken = async () => {
     try {
@@ -51,6 +57,31 @@ const Bidding = ({ route }) => {
       return null;
     }
   };
+
+  const handleOkay=()=>{
+    navigation.navigate('bidding', { userId });
+    setSelfAccepted(false);
+
+  }
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      setComponentMounted(true);
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+    return () => {
+      setComponentMounted(false);
+      // Unsubscribe from socket events, etc.
+    };
+ 
+  }, []);
+
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,8 +108,12 @@ const Bidding = ({ route }) => {
   useEffect(() => {
     socket.on('accepted', (BidData) => {
       console.log('Bid accepted', BidData);
-      setUserAccepted(true);
+      if (BidData.sender.role === 'worker')
+        setUserAccepted(true);
+      else setSelfAccepted(true);
+      
       setLabel(BidData.amount);
+      setBidId(BidData._id);
     });
 
     // Cleanup function to unsubscribe from socket
@@ -114,6 +149,39 @@ const Bidding = ({ route }) => {
 
  
 
+  useEffect(() => {
+    async function check() {
+      try {
+        if (uid) {
+          const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/emp/bid`, {
+            userId:  workerId,
+            uid,
+           
+          });
+          console.log(response.data)
+          setLabel(response.data.amount)
+          setBidId(response.data._id)
+          setStatus(response.data.approval)
+          console.log("approval value",response.data.approval)
+
+          if (response.data && response.data.approval===0) {
+            if (response.data.sender.role === "worker") {
+              setSelfAccepted(true)
+            }
+            if (response.data.sender.role === "user") {
+              setuserAccepted(true)
+            }
+          }
+        }
+      }
+      catch (error) {
+        console.log(error)
+      }
+    }
+    check();
+  }, [uid])
+
+
   const closeBid = () => {
     // Implement your logic for closing bid here
     
@@ -133,7 +201,7 @@ const Bidding = ({ route }) => {
       const currentTime = getCurrentTime();
       const newMessage = {
         Fid: generateID(),   
-        sender: { role: 'user' },
+        sender: { role: 'worker' },
         contentType: 'text',
         content: { text: message },
         timestamp: currentTime
@@ -146,13 +214,13 @@ const Bidding = ({ route }) => {
     }
 
   };
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setTimer((prevTimer) => prevTimer - 1);
-  //   }, 1000);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimer((prevTimer) => prevTimer - 1);
+    }, 1000);
 
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCreateRoom = () => {
     console.log({ amount });
@@ -168,13 +236,17 @@ const Bidding = ({ route }) => {
   const handleAccept=(amt,id)=>{
     setSelfAccepted(true);
     setLabel(amt);
+    setShowMessage(true);
+
+    
     const currentTime = getCurrentTime();
     const BidData = {
       amount: parseInt(amt) ,
       timestamp:currentTime,
       chatId:id,
-      userId: uid,
-      workerId,
+      userId: workerId,
+      uid,
+      sender: { role: 'worker' },
     };
     // Emit the bid message via socket
     socket.emit('accept', { room_id: roomId, BidData } );
@@ -184,6 +256,8 @@ const Bidding = ({ route }) => {
   }
 
   const handleReject=()=>{
+    navigation.navigate('bidding', { userId });
+    setSelfAccepted(false);
 
   }
   const handleConfirm=()=>{
@@ -202,7 +276,7 @@ const Bidding = ({ route }) => {
     const currentTime = getCurrentTime();
     const newBidMessage = {
       id: generateID(),
-      sender: { role: 'user' },
+      sender: { role: 'worker' },
       contentType: 'bid',
       content: { bidAmount: parseInt(amount) },
       timestamp: currentTime
@@ -220,17 +294,47 @@ const closeModal = () => setVisible(false);
 
 return (
   <View style={styles.container}>
-    <View style={styles.head}>
-      <Text style={styles.heading}>Chat With {uname}</Text>
-      <TouchableOpacity style={styles.sendButton} onPress={() => setVisible(true) } disabled={selfaccepted||useraccepted} >
-        <Text style={styles.sendButtonText}>Bid</Text>
-      </TouchableOpacity>
+    
+      <Text style={styles.heading}>Chat With {username}</Text>
+      {
+      (status === -1 ) &&
+        <View style={styles.head}>
+          <TouchableOpacity style={styles.sendButton} onPress={() => setVisible(true)} disabled={selfaccepted || useraccepted} >
+            <Text style={styles.sendButtonText}>Bid</Text>
+          </TouchableOpacity>
     </View>
+      }
+
+      { //Active bookings (Confirmed)
+        status === 1 &&
+        <View style={styles.head}>
+          <TouchableOpacity style={styles.sendButton} onPress={() => navigation.navigate('active')} >
+            <Text style={styles.sendButtonText}>Active booking details</Text>
+          </TouchableOpacity>
+        </View>
+      }
     <View>
       
       {/* <View style={styles.profileIcon}>
         <Text>Profile Icon</Text>
       </View> */}
+      {
+          selfaccepted &&
+          <View style={styles.popuplabelContainer}>
+            <Text style={styles.whiteText}>You have accepted the Request</Text>
+            <Text style={styles.whiteText}>click to Confirm</Text>
+            <Text style={styles.labelText}> Rs.{label}</Text>
+            <View style={styles.acceptRejectContainer}>
+              <Pressable style={styles.acceptButton} onPress={handleConfirm}>
+                <Text style={styles.modaltext1} >CONFIRM</Text>
+              </Pressable>
+              <Pressable style={styles.acceptButton} onPress={handleReject}>
+                <Text style={styles.modaltext1}>CLOSE</Text>
+              </Pressable>
+            </View>
+          </View>
+
+        }
 
       {
         useraccepted &&     
@@ -249,82 +353,91 @@ return (
       
       }
 
-      {
-        selfaccepted &&
-        <View style={styles.popuplabelContainer}>
-          <Text style={styles.whiteText}>You accepted the Request</Text>
-          <Text style={styles.labelText}> {label}</Text>
-          <View style={styles.acceptRejectContainer}>
-            <Pressable style={styles.acceptButton} onPress={handleConfirm}>
-              <Text style={styles.modaltext1} >CONFIRM</Text>
-            </Pressable>
-            <Pressable style={styles.acceptButton} onPress={handleReject}>
-              <Text style={styles.modaltext1}>CLOSE</Text>
-            </Pressable>
-          </View>
-        </View>
+     
 
-      }
-
-      <ScrollView style={styles.chatContainer}>
-        {messages?.map((msg) => (
-          msg.contentType === "text" ? (<View key={msg.id} style={styles.messageContainer}>
-            <View style={styles.profileIcon}>
-              {/* Profile Icon */}
-              {/* You can place your profile icon component here */}
-              {/* <Text>Profile Icon</Text> */}
-            </View>
-            <View style={styles.messageContent}>
-              {/* Time */}
-              <Text style={styles.timeText}>{msg.timestamp}</Text>
-              {/* Message Text */}
-              <Text style={styles.messageText}>{msg.content.text}</Text>
-
-            </View>
-          </View>) :
-          (<View key={msg.id}>
-                <View style={styles.labelContainer}>
-                  <Text style={styles.labelText}>{label}</Text>
+      <ScrollView style={styles.chatContainer} ref={scrollViewRef}>
+          {messages?.map((msg) => (
+            <View key={msg.id} style={[styles.messageContainer, msg.sender.role === 'user' ? styles.UserContainer : styles.WorkerContainer]}>
+              <View style={styles.profileIcon}>
+                {/* Profile Icon */}
+                {/* You can place your profile icon component here */}
+                {/* <Text>Profile Icon</Text> */}
+              </View>
+              {msg.contentType === "text" ? (
+                <View style={[styles.messageContent, msg.sender.role === 'worker' ? styles.UserContainer : styles.WorkerContainer]}>
+                  {/* Time */}
+                  <Text style={styles.timeText}>{msg.timestamp}</Text>
+                  {/* Message Text */}
+                  <Text style={msg.sender.role === "worker" ? styles.messageUserText : styles.messageWorkerText}>
+                    {msg.content.text}
+                  </Text>
+                </View>
+              ) : (
+                <View style={[
+                  styles.labelContainer,
+                  { backgroundColor: msg.sender.role === 'worker' ? '#f0f0f0' : '#C0C0C0' }
+                ]}>
+                  <Text style={styles.labelText}>{msg.content.bidAmount}</Text>
                   <Text style={styles.timerText}>
                     Timer: {Math.floor(timer / 60)}:{timer % 60 < 10 ? '0' : ''}{timer % 60}
                   </Text>
-                  <View style={styles.acceptRejectContainer}>
-                    <Pressable style={styles.acceptButton} onPress={()=>handleAccept(msg.content.bidAmount,msg._id)}>
-                      <Text style={styles.modaltext}>ACCEPT</Text>
-                    </Pressable>
-                    <Pressable style={styles.rejectButton} onPress={handleReject}>
-                      <Text style={styles.modaltext}>REJECT</Text>
-                    </Pressable>
-                  </View>
-                </View> 
-            </View>)
-        ))}
-      </ScrollView>
-      {/* Bidding Chat Messages */}
+                  {msg.sender.role !== "worker" ? (
+                    <View style={styles.acceptRejectContainer}>
+                      <Pressable style={styles.acceptButton} onPress={() => handleAccept(msg.content.bidAmount, msg._id)}>
+                        <Text style={styles.modaltext}>ACCEPT</Text>
+                      </Pressable>
+                      {showMessage && (
+                          
+                          <View style={styles.messageContainer1}>
+                            <Text style={styles.messageText1}>Waiting for user's reply of date and time...</Text>
+                            <Pressable style={styles.rejectButton} onPress={handleOkay}>
+                        <Text style={styles.modaltext}>Okay</Text>
+                      </Pressable>
+                          
+                          </View>
+                        )}
+                      <Pressable style={styles.rejectButton} onPress={handleReject}>
+                        <Text style={styles.modaltext}>REJECT</Text>
+                      </Pressable>
+                    </View>) :
+                    
+                    (<View style={styles.acceptRejectContainer}>
+                      <Pressable style={styles.acceptButton}  >
+                        <Text style={styles.modaltext}>WAITING</Text>
+                      </Pressable>
+                    </View>)
+                  }
+                </View>
+              )}
+            </View>
+          ))}
+        </ScrollView>
 
-      {visible ? 
-      // <Modal setVisible={setVisible} roomId={roomId} /> 
-      <View style={styles.modalContainer}>
-          <Text style={styles.modalsubheading}>Enter the Amount</Text>
-          <TextInput
+        {/* Bidding Chat Messages */}
+
+        {visible ?
+          // <Modal setVisible={setVisible} roomId={roomId} /> 
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalsubheading}>Enter the Amount</Text>
+            <TextInput
               style={styles.modalinput}
               placeholder='Amount...'
               onChangeText={(value) => setAmount(value)}
-          />
+            />
 
-          <View style={styles.modalbuttonContainer}>
+            <View style={styles.modalbuttonContainer}>
               <Pressable style={styles.modalbutton} onPress={handleCreateBid}>
-                  <Text style={styles.modaltext}>CREATE</Text>
+                <Text style={styles.modaltext}>CREATE</Text>
               </Pressable>
               <Pressable
-                  style={[styles.modalbutton, { backgroundColor: "grey" }]}
-                  onPress={closeModal}
+                style={[styles.modalbutton, { backgroundColor: "grey" }]}
+                onPress={closeModal}
               >
-                  <Text style={styles.modaltext}>CANCEL</Text>
+                <Text style={styles.modaltext}>CANCEL</Text>
               </Pressable>
+            </View>
           </View>
-      </View>
-      : ""}
+          : ""}
 
       {/* Message Input and Send Button */}
       <View style={styles.inputContainer}>
@@ -512,6 +625,31 @@ const styles = StyleSheet.create({
     fontSize:16,
     // Additional styles if needed
   }, 
+
+  messageContainer1: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 700,
+    width:200,
+    marginLeft:135,
+    alignItems: 'center',
+  },
+  messageText1: {
+    color: 'white',
+    fontSize: 16,
+  },
+  rejectButton: {
+    backgroundColor: "black",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginHorizontal: 5,
+    borderRadius: 5,
+  },
+  modaltext: {
+    color: "#FFF",  
+    fontSize: 16,
+  },
   
 });
  

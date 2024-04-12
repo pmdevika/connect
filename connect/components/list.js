@@ -49,6 +49,27 @@ const CustomerListPage = () => {
     fetchData();
   }, []);
 
+  const handleLocation = () => {
+    navigation.navigate('map')
+  }
+  const [selfaddress, setselfAddress] = useState('');
+
+useEffect(() => {
+  const fetchLocation = async () => {
+    try {
+      const uid = getUserIdFromToken(); // You need to implement this function
+      if (uid) {
+        const locationResponse = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/emp/location/${uid}`);
+        setselfAddress(locationResponse.data.address);
+      }
+    } catch (error) {
+      console.log("Error fetching location", error);
+    }
+  };
+  fetchLocation();
+}, []);
+
+
 
 // const fetchCustomerDetails = (userId) => {
 //   console.log(2345678)
@@ -121,7 +142,7 @@ console.log("customerdata",customerData)
   const renderCustomerItem = ({ item }) => (
     <TouchableOpacity
       style={styles.customerItem}
-      onPress={() => handleCustomerSelection(item._id)}
+      
     >
       <Text style={styles.customerName}>{item.username}</Text>
       {/* <Text style={styles.customerLocation}>{item.location}</Text> */}
@@ -129,6 +150,7 @@ console.log("customerdata",customerData)
       <Text style={styles.customerLocation}>{item.phone}</Text>
       <TouchableOpacity
         style={styles.chatButton}
+        onPress={() => handleCustomerSelection(item._id)}
        
       >
         <Text style={styles.chatButtonText}>Chat</Text>
@@ -150,9 +172,19 @@ console.log("customerdata",customerData)
   // );
 
   return (
+    
    
    
     <View style={styles.container}>
+    <View style={styles.header}>
+  <Ionicons name="location" size={24} color="black" style={{ marginLeft: 10 ,marginTop:14}} onPress={handleLocation} />
+  <View>
+    <Text style={styles.categoryText2}>Location</Text>
+    {/* <Text style={styles.categoryTextsmall}>{address}</Text> */}
+  </View>
+  {/* Add the rest of the header content here */}
+</View>
+    
      <View style={styles.headingContainer}>
         <Text style={styles.heading}>Customers List</Text>
       </View>
@@ -194,26 +226,30 @@ const styles = StyleSheet.create({
   },
   listing:{
     top:50,
+    marginTop:10,
     width:440,
 
   },
   heading: {
-    color: 'white',
-    fontSize: 10,
+    color: 'black',
+    fontSize: 18,
     fontWeight: 'bold',
+    marginLeft:30
   },
     headingContainer: {
       position: 'absolute',
       width: 460,
-      height: 40,
+      height: 20,
      
       top: 2,
-      backgroundColor: 'black',
+      backgroundColor: 'white',
       justifyContent: 'center',
        alignItems: 'left',
-       padding:20,
+       padding:10,
        borderRadius:8,
-       height:50
+       height:50,
+       marginTop:50,
+       
      
     },
   pageTitle: {
@@ -280,6 +316,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  header: {
+    flexDirection: 'row',
+    marginBottom: 0,
+    marginTop: 10,
+    backgroundColor: "grey",
+    width:450,
+    marginTop:-40,
+     padding:10
+  },
+  categoryText2: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    color: "black",
+    marginLeft: 10,
+    marginTop:18
   },
 });
 
