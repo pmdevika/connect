@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, Button,Pressable } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, Pressable } from 'react-native';
 import MapView, { UrlTile, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
+import { useGlobalContext } from '../GlobalContext';
+
 
 export default function App() {
     const [location, setLocation] = useState(null);
@@ -13,39 +15,42 @@ export default function App() {
     const [errorMsg, setErrorMsg] = useState(null);
     const [uid, setUId] = useState('');
     const mapRef = useRef(null);
+    const { globalState, updateGlobalState } = useGlobalContext();
+    const { address } = globalState;
+
 
     const [userId, setUserId] = useState(null);
 
     const retrieveToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (token) {
-          console.log('Token retrieved successfully');
-          const decodedToken = jwtDecode(token);
-  
-          console.log('Token Expiry:', new Date(decodedToken.exp * 1000)); // Convert to milliseconds
-  
-          const { userId, username } = decodedToken;
-          console.log("list page")
-          console.log(decodedToken)
-          return { userId, username };
-        } else {
-          console.log('Token not found');
+        try {
+            const token = await AsyncStorage.getItem('token');
+            if (token) {
+                console.log('Token retrieved successfully');
+                const decodedToken = jwtDecode(token);
+
+                console.log('Token Expiry:', new Date(decodedToken.exp * 1000)); // Convert to milliseconds
+
+                const { userId, username } = decodedToken;
+                console.log("list page")
+                console.log(decodedToken)
+                return { userId, username };
+            } else {
+                console.log('Token not found');
+            }
+        } catch (error) {
+            console.error('Failed to retrieve token', error);
         }
-      } catch (error) {
-        console.error('Failed to retrieve token', error);
-      }
     };
-  
+
     useEffect(() => {
-      const fetchData = async () => {
-        const { userId, username } = await retrieveToken();
-        setUserId(userId);
-      };
-      fetchData();
+        const fetchData = async () => {
+            const { userId, username } = await retrieveToken();
+            setUserId(userId);
+        };
+        fetchData();
     }, []);
 
-    
+
 
     // const retrieveToken = async () => {
     //     try {
@@ -69,7 +74,7 @@ export default function App() {
 
 
 
-    
+
     // useEffect(() => {
     //     const fetchData = async () => {
     //         try {
@@ -97,7 +102,7 @@ export default function App() {
                 let currentLocation = await Location.getCurrentPositionAsync({});
                 console.log(currentLocation);
                 setLocation(currentLocation);
-                setMarkerPosition({
+                mapRef.current.animateToRegion({
                     latitude: currentLocation.coords.latitude,
                     longitude: currentLocation.coords.longitude,
                     latitudeDelta: 0.0922,
@@ -117,57 +122,58 @@ export default function App() {
     const fetchAddress = async (loc_coord) => {
         try {
             const response = await Location.reverseGeocodeAsync(loc_coord);
-            console.log(response)
-            return response[0].formattedAddress
+            console.log("-----------------------------------------------",response)
+            return response[0].city
         }
         catch (error) {
-            console.log(error)
+            console.log({error})
             return ""
         }
     }
 
     const handleMarkerPress = (e) => {
-        console.log("pressed",e.nativeEvent.coordinate);
+        console.log("pressed", e.nativeEvent.coordinate);
         setMarkerPosition(e.nativeEvent.coordinate);
         handleLocationUpdate();
     };
 
-    useEffect(() => {
-        const handleLocationUpdate = async () => {
-            try {
-                const { username, password } = await retrieveToken();
-                setUId(username);
+    // useEffect(() => {
+    const handleLocationUpdate = async () => {
+        try {
+            const { userId, username } = await retrieveToken();
+            // setUId(username);
 
-                if (markerPosition) {
-                    const loc_address = await fetchAddress(markerPosition)
-                    updateGlobalState({address:loc_address})
-                    const requestBody = {
-                        userId: uid,
-                        location: {
-                            latitude: markerPosition.latitude,
-                            longitude: markerPosition.longitude,
-                        },
-                        address: loc_address
-                    };
-                    console.log({requestBody});
-                    const r = JSON.stringify(requestBody);
-                    console.log(r);
+            if (markerPosition) {
+                const loc_address = await fetchAddress(markerPosition)
+                console.log({loc_address})
+                updateGlobalState({ address: loc_address })
+                const requestBody = {
+                    workerId:userId,
+                    location: {
+                        latitude: markerPosition.latitude,
+                        longitude: markerPosition.longitude,
+                    },
+                    address: loc_address
+                };
+                console.log({ requestBody });
+                const r = JSON.stringify(requestBody);
+                console.log(r);
 
-                    axios.post(`${process.env.EXPO_PUBLIC_API_URL}/emp/savelocation`, requestBody)
-                        .then(response => {
-                            console.log(response.data);
-                        })
-                        .catch(error => {
-                            console.log('Error:', error);
-                        });
-                }
-            } catch (error) {
-                console.error('Error handling location update:', error);
+                axios.post(`${process.env.EXPO_PUBLIC_API_URL}/emp/savelocation`, requestBody)
+                    .then(response => {
+                        console.log(response.data);
+                    })
+                    .catch(error => {
+                        console.log('Error:', error);
+                    });
             }
-        };
+        } catch (error) {
+            console.error('Error handling location update:', error);
+        }
+    };
 
-        handleLocationUpdate();
-    }, [markerPosition]);
+    // handleLocationUpdate();
+    // }, [markerPosition]);
 
     const handleSearch = async () => {
         try {
@@ -191,7 +197,7 @@ export default function App() {
     if (errorMsg) {
         displayText = errorMsg;
     } else if (location) {
-        const latitude = location.coords .latitude
+        const latitude = location.coords.latitude
         const longitude = location.coords.longitude
         displayText = 'Map Loaded';
     }
@@ -227,10 +233,10 @@ export default function App() {
                 />
                 <Button title="Search" onPress={handleSearch} />
             </View>
-            <Text style={styles.paragraph}>{"You are at "+JSON.stringify(markerPosition)}</Text>
+            <Text style={styles.paragraph}>{"You are at " + address}</Text>
         </View>
 
-        
+
     );
 }
 
@@ -257,5 +263,5 @@ const styles = StyleSheet.create({
         fontSize: 18,
         textAlign: 'center',
     },
-   
+
 });

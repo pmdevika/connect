@@ -16,11 +16,14 @@ import bid from './components/bid';
 import msglist from './components/msglist';
 import map from './components/Map';
 import pendinglist from './components/PendingList'
+import { GlobalProvider } from './GlobalContext';
+import Active from './components/active';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
+    <GlobalProvider>
     <NavigationContainer>
       <Stack.Navigator>
       <Stack.Screen name="getstarted" component={GetStarted} options={{ title: '' }} />
@@ -35,7 +38,9 @@ export default function App() {
         <Stack.Screen name="msglist" component={msglist} options={{ title: '' }} />
         <Stack.Screen name="map" component={map} options={{ title: '' }} />
         <Stack.Screen name="pendinglist" component={pendinglist} options={{ title: '' }} />
+        <Stack.Screen name="active" component={Active} options={{ title: 'Active Appointments' }} />
       </Stack.Navigator>
     </NavigationContainer>
+    </GlobalProvider>
   );
 }
