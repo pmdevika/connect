@@ -1,10 +1,10 @@
-import React, { useState, useEffect,useRef } from 'react';
-import { Modal ,View, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput, ScrollView, Pressable } from 'react-native';
 // import {Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput, ScrollView, Pressable } 
 import { MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 import { useNavigation } from '@react-navigation/native';
 // import Modal from "./Modal";
@@ -16,7 +16,7 @@ const Bidding = ({ route }) => {
   const scrollViewRef = useRef();
   const { workerId } = route.params;
   const [componentMounted, setComponentMounted] = useState(false);
-  console.log(workerId)
+  // console.log(workerId)
   const navigation = useNavigation();
   const [userId, setUserId] = useState('');
   const [uid, setUId] = useState('');
@@ -26,15 +26,16 @@ const Bidding = ({ route }) => {
   const [roomId, setRoomId] = useState('');
   const [uname, setuName] = useState('');
   const [messages, setMessages] = useState([]);
-  const [useraccepted,setUserAccepted]=useState(false);
-  const [selfaccepted,setSelfAccepted]=useState(false);
+  const [useraccepted, setUserAccepted] = useState(false);
+  const [selfaccepted, setSelfAccepted] = useState(false);
   const [label, setLabel] = useState("");
   const [timer, setTimer] = useState(300);
-  const [amount, setAmount] = useState(""); 
+  const [amount, setAmount] = useState("");
   const [sub, setSub] = useState(false);
   const [status, setStatus] = useState(-1);
   const generateID = () => Math.random().toString(36).substring(2, 10);
   const [showMessage, setShowMessage] = useState(false);
+  const [bidId,setBidId]=useState(null)
 
 
   const retrieveToken = async () => {
@@ -44,7 +45,7 @@ const Bidding = ({ route }) => {
       if (token) {
         console.log('Token retrieved successfully');
         const decodedToken = jwtDecode(token);
-        console.log("decodeToken",decodedToken)
+        console.log("decodeToken", decodedToken)
         setUserName(decodedToken.username);
         setUId(decodedToken.userId);
         console.log("uid", uid)
@@ -58,7 +59,7 @@ const Bidding = ({ route }) => {
     }
   };
 
-  const handleOkay=()=>{
+  const handleOkay = () => {
     navigation.navigate('bidding', { userId });
     setSelfAccepted(false);
 
@@ -78,10 +79,10 @@ const Bidding = ({ route }) => {
       setComponentMounted(false);
       // Unsubscribe from socket events, etc.
     };
- 
+
   }, []);
 
-  
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -111,7 +112,7 @@ const Bidding = ({ route }) => {
       if (BidData.sender.role === 'worker')
         setUserAccepted(true);
       else setSelfAccepted(true);
-      
+
       setLabel(BidData.amount);
       setBidId(BidData._id);
     });
@@ -123,18 +124,18 @@ const Bidding = ({ route }) => {
   }, []);
 
   useEffect(() => {
-    async function fetchData(){
+    async function fetchData() {
       try {
         if (uid) {
-          console.log({uid,workerId})
+          // console.log({ uid, workerId })
           // const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/emp/chat`,
           const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/emp/chat`, {
-            
+
             userId: workerId,
-            workerId:uid,
+            workerId: uid,
           });
           socket.emit("createRoom", response.data.chatId);
-          console.log('Chat opened successfully', response.data);
+          console.log('Chat opened successfully');
           setRoomId(response.data.chatId);
           setuName(response.data.uName)
           setMessages(response.data.messages)
@@ -147,29 +148,33 @@ const Bidding = ({ route }) => {
     fetchData();
   }, [uid])
 
- 
+
 
   useEffect(() => {
     async function check() {
       try {
         if (uid) {
+          console.log({
+            userId: workerId,
+            workerId: uid,
+          })
           const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/emp/bid`, {
-            userId:  workerId,
-            uid,
-           
+            userId: workerId,
+            workerId: uid,
+
           });
           console.log(response.data)
           setLabel(response.data.amount)
           setBidId(response.data._id)
           setStatus(response.data.approval)
-          console.log("approval value",response.data.approval)
+          console.log("approval value", response.data.approval)
 
-          if (response.data && response.data.approval===0) {
+          if (response.data && response.data.approval === 0) {
             if (response.data.sender.role === "worker") {
               setSelfAccepted(true)
             }
             if (response.data.sender.role === "user") {
-              setuserAccepted(true)
+              setUserAccepted(true)
             }
           }
         }
@@ -184,7 +189,7 @@ const Bidding = ({ route }) => {
 
   const closeBid = () => {
     // Implement your logic for closing bid here
-    
+
   };
 
   const getCurrentTime = () => {
@@ -196,18 +201,18 @@ const Bidding = ({ route }) => {
 
   // Function to handle sending message
   const sendMessage = () => {
-    console.log("message",message)
+    console.log("message", message)
     if (message.trim() !== '') {
       const currentTime = getCurrentTime();
       const newMessage = {
-        Fid: generateID(),   
+        Fid: generateID(),
         sender: { role: 'worker' },
         contentType: 'text',
         content: { text: message },
         timestamp: currentTime
       };
-      console.log("roomId",roomId)
-      socket.emit('message', { room_id: roomId, newMessage})
+      console.log("roomId", roomId)
+      socket.emit('message', { room_id: roomId, newMessage })
       setMessages([...messages, newMessage]);
       console.log(messages)
       setMessage('');
@@ -233,34 +238,34 @@ const Bidding = ({ route }) => {
   }, 60000);
   const [visible, setVisible] = useState(false);
 
-  const handleAccept=(amt,id)=>{
+  const handleAccept = (amt, id) => {
     setSelfAccepted(true);
     setLabel(amt);
     setShowMessage(true);
 
-    
+
     const currentTime = getCurrentTime();
     const BidData = {
-      amount: parseInt(amt) ,
-      timestamp:currentTime,
-      chatId:id,
+      amount: parseInt(amt),
+      timestamp: currentTime,
+      chatId: id,
       userId: workerId,
       uid,
       sender: { role: 'worker' },
     };
     // Emit the bid message via socket
-    socket.emit('accept', { room_id: roomId, BidData } );
+    socket.emit('accept', { room_id: roomId, BidData });
 
     console.log(selfaccepted);
     setVisible(false);
   }
 
-  const handleReject=()=>{
+  const handleReject = () => {
     navigation.navigate('bidding', { userId });
     setSelfAccepted(false);
 
   }
-  const handleConfirm=()=>{
+  const handleConfirm = () => {
     navigation.navigate('details');
   }
 
@@ -282,27 +287,27 @@ const Bidding = ({ route }) => {
       timestamp: currentTime
     };
     // Emit the bid message via socket
-    socket.emit('message', { room_id: roomId, newMessage: newBidMessage },); 
+    socket.emit('message', { room_id: roomId, newMessage: newBidMessage },);
     // Add the bid message to the messages state
     setMessages([...messages, newBidMessage]);
     // Reset the input field and close the modal
     setMessage('');
     setVisible(false);
   };
-  const onClose=()=>{}
-const closeModal = () => setVisible(false);
+  const onClose = () => { }
+  const closeModal = () => setVisible(false);
 
-return (
-  <View style={styles.container}>
-    
+  return (
+    <View style={styles.container}>
+
       <Text style={styles.heading}>Chat With {username}</Text>
       {
-      (status === -1 ) &&
+        (status === -1) &&
         <View style={styles.head}>
           <TouchableOpacity style={styles.sendButton} onPress={() => setVisible(true)} disabled={selfaccepted || useraccepted} >
             <Text style={styles.sendButtonText}>Bid</Text>
           </TouchableOpacity>
-    </View>
+        </View>
       }
 
       { //Active bookings (Confirmed)
@@ -313,12 +318,12 @@ return (
           </TouchableOpacity>
         </View>
       }
-    <View>
-      
-      {/* <View style={styles.profileIcon}>
+      <View>
+
+        {/* <View style={styles.profileIcon}>
         <Text>Profile Icon</Text>
       </View> */}
-      {
+        {
           selfaccepted &&
           <View style={styles.popuplabelContainer}>
             <Text style={styles.whiteText}>You have accepted the Request</Text>
@@ -336,26 +341,26 @@ return (
 
         }
 
-      {
-        useraccepted &&     
-        <View style={styles.popuplabelContainer}>
-        <Text style={styles.whiteText}>user accepted the Request</Text>
-        <Text style={styles.labelText}> {label}</Text>      
-        <View style={styles.acceptRejectContainer}>
-            <Pressable style={styles.acceptButton} onPress={handleConfirm}>
-              <Text style={styles.modaltext1} >CONFIRM</Text>
-            </Pressable>
-            <Pressable style={styles.acceptButton} onPress={handleReject}>
-              <Text style={styles.modaltext1}>CLOSE</Text>
-            </Pressable>
-        </View>        
-      </View>
-      
-      }
+        {
+          useraccepted &&
+          <View style={styles.popuplabelContainer}>
+            <Text style={styles.whiteText}>user accepted the Request</Text>
+            <Text style={styles.labelText}> {label}</Text>
+            <View style={styles.acceptRejectContainer}>
+              <Pressable style={styles.acceptButton} onPress={handleConfirm}>
+                <Text style={styles.modaltext1} >CONFIRM</Text>
+              </Pressable>
+              <Pressable style={styles.acceptButton} onPress={handleReject}>
+                <Text style={styles.modaltext1}>CLOSE</Text>
+              </Pressable>
+            </View>
+          </View>
 
-     
+        }
 
-      <ScrollView style={styles.chatContainer} ref={scrollViewRef}>
+
+
+        <ScrollView style={styles.chatContainer} ref={scrollViewRef}>
           {messages?.map((msg) => (
             <View key={msg.id} style={[styles.messageContainer, msg.sender.role === 'user' ? styles.UserContainer : styles.WorkerContainer]}>
               <View style={styles.profileIcon}>
@@ -387,20 +392,20 @@ return (
                         <Text style={styles.modaltext}>ACCEPT</Text>
                       </Pressable>
                       {showMessage && (
-                          
-                          <View style={styles.messageContainer1}>
-                            <Text style={styles.messageText1}>Waiting for user's reply of date and time...</Text>
-                            <Pressable style={styles.rejectButton} onPress={handleOkay}>
-                        <Text style={styles.modaltext}>Okay</Text>
-                      </Pressable>
-                          
-                          </View>
-                        )}
+
+                        <View style={styles.messageContainer1}>
+                          <Text style={styles.messageText1}>Waiting for user's reply of date and time...</Text>
+                          <Pressable style={styles.rejectButton} onPress={handleOkay}>
+                            <Text style={styles.modaltext}>Okay</Text>
+                          </Pressable>
+
+                        </View>
+                      )}
                       <Pressable style={styles.rejectButton} onPress={handleReject}>
                         <Text style={styles.modaltext}>REJECT</Text>
                       </Pressable>
                     </View>) :
-                    
+
                     (<View style={styles.acceptRejectContainer}>
                       <Pressable style={styles.acceptButton}  >
                         <Text style={styles.modaltext}>WAITING</Text>
@@ -439,22 +444,22 @@ return (
           </View>
           : ""}
 
-      {/* Message Input and Send Button */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type your message..."
-          value={message}
-          onChangeText={setMessage}
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
+        {/* Message Input and Send Button */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type your message..."
+            value={message}
+            onChangeText={setMessage}
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
 
-  </View>
-);
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -518,7 +523,7 @@ const styles = StyleSheet.create({
     width: '100%',
     bottom: '17%',
     padding: '4%',
-    marginTop:50,
+    marginTop: 50,
   },
   input: {
     flex: 1,
@@ -545,7 +550,7 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     borderWidth: 1,
     paddingVertical: 10,
-    margin:10,
+    margin: 10,
   },
   labelText: {
     fontSize: 18,
@@ -573,11 +578,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   modaltext: {
-    color: "#FFF",  
+    color: "#FFF",
     fontSize: 16,
   },
   modaltext1: {
-    color: "white",  
+    color: "white",
     fontSize: 16,
   },
   modalContainer: {
@@ -610,7 +615,7 @@ const styles = StyleSheet.create({
   modaltext: {
     color: "#FFF",
     fontSize: 16,
-  }, 
+  },
   popuplabelContainer: {
     backgroundColor: 'grey',
     borderRadius: 15,
@@ -620,19 +625,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-  whiteText: { 
+  whiteText: {
     color: 'white',
-    fontSize:16,
+    fontSize: 16,
     // Additional styles if needed
-  }, 
+  },
 
   messageContainer1: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 10,
     borderRadius: 8,
     marginTop: 700,
-    width:200,
-    marginLeft:135,
+    width: 200,
+    marginLeft: 135,
     alignItems: 'center',
   },
   messageText1: {
@@ -647,11 +652,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   modaltext: {
-    color: "#FFF",  
+    color: "#FFF",
     fontSize: 16,
   },
-  
+
 });
- 
+
 
 export default Bidding;

@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { FlatList, ActivityIndicator, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import socket from '../utils/socket';
-
-
-
+import { useGlobalContext } from '../GlobalContext';
 
 // import { useNavigation } from '@react-navigation/native';
 
 
 const CustomerListPage = () => {
 
-  const[customerData,setCustomerData]=useState([])
-
+  const [customerData, setCustomerData] = useState([])
+  const { globalState, updateGlobalState } = useGlobalContext();
+  // Access the global state
+  const { address } = globalState;
 
   const [userId, setUserId] = useState(null);
 
@@ -52,66 +52,69 @@ const CustomerListPage = () => {
   const handleLocation = () => {
     navigation.navigate('map')
   }
-  const [selfaddress, setselfAddress] = useState('');
+  // const [selfaddress, setselfAddress] = useState('');
 
-useEffect(() => {
-  const fetchLocation = async () => {
-    try {
-      const uid = getUserIdFromToken(); // You need to implement this function
-      if (uid) {
-        const locationResponse = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/emp/location/${uid}`);
-        setselfAddress(locationResponse.data.address);
-      }
-    } catch (error) {
-      console.log("Error fetching location", error);
-    }
-  };
-  fetchLocation();
-}, []);
-
-
-
-// const fetchCustomerDetails = (userId) => {
-//   console.log(2345678)
-//   const url = `https://connect-q46w.onrender.com/emp/requests/${userId}`;
-
-//   axios
-//     .get(url)
-//     .then(response => {
-//       console.log(response)
-//       const customerData = response.data;
-//       const { name, location } = customerData;
-//       console.log('Customer Details:', { name, location });
-//       // navigation.navigate('', { name, id: customerId, location });
-//     })
-//     .catch(error => {
-//       console.log('Error fetching customer details:', error);
-//     });
-// };
-
-useEffect(() => {
-  const fetchData = async () => {
-    const { userId, username } = await retrieveToken();
-    if (userId) {
+  useEffect(() => {
+    const fetchLocation = async () => {
       try {
-        const response = await axios.post(
-          `${process.env.EXPO_PUBLIC_API_URL}/emp/chats/users`,{workerId:userId}
-        );
-        console.log(response.data)
-        const fetchedCustomerData = response.data;
-        console.log("customerData",fetchedCustomerData)
-        setCustomerData(fetchedCustomerData.users);
+        // const uid = getUserIdFromToken(); // You need to implement this function
+        if (userId) {
+        const locationResponse = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/emp/location/${userId}`);
+         console.log("LOCATION___________",locationResponse.data)
+          // setselfAddress(locationResponse.data.address);
+          updateGlobalState({ address: locationResponse.data.address })
+          console.log("your address",address)
+        }
       } catch (error) {
-        console.error('Error fetching customer data:', error);
+        console.log("Error fetching location", error);
       }
-    }
-  };
-
-  fetchData();
-}, []);
+    };
+    fetchLocation();
+  }, [userId]);
 
 
-console.log("customerdata",customerData)
+
+  // const fetchCustomerDetails = (userId) => {
+  //   console.log(2345678)
+  //   const url = `https://connect-q46w.onrender.com/emp/requests/${userId}`;
+
+  //   axios
+  //     .get(url)
+  //     .then(response => {
+  //       console.log(response)
+  //       const customerData = response.data;
+  //       const { name, location } = customerData;
+  //       console.log('Customer Details:', { name, location });
+  //       // navigation.navigate('', { name, id: customerId, location });
+  //     })
+  //     .catch(error => {
+  //       console.log('Error fetching customer details:', error);
+  //     });
+  // };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { userId, username } = await retrieveToken();
+      if (userId) {
+        try {
+          const response = await axios.post(
+            `${process.env.EXPO_PUBLIC_API_URL}/emp/chats/users`, { workerId: userId }
+          );
+          console.log(response.data)
+          const fetchedCustomerData = response.data;
+          console.log("customerData", fetchedCustomerData)
+          setCustomerData(fetchedCustomerData.users);
+        } catch (error) {
+          console.error('Error fetching customer data:', error);
+        }
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+  console.log("customerdata", customerData)
 
   const navigation = useNavigation();
   const handlependinglistPress = () => {
@@ -124,9 +127,9 @@ console.log("customerdata",customerData)
     navigation.navigate('profile');
   };
   const handlechat = (_id) => {
-    console.log("Id is",_id)
- 
-    navigation.navigate('bidding',{workerId:_id});
+    console.log("Id is", _id)
+
+    navigation.navigate('bidding', { workerId: _id });
   };
 
   const handleCustomerSelection = (customerId) => {
@@ -135,14 +138,14 @@ console.log("customerdata",customerData)
     socket.emit("createRoom", "65f0a7b6b31b36103dd42af6");
     // fetchCustomerDetails(customerId);
     // console.log(567)
-    navigation.navigate('bidding', {workerId:customerId});
+    navigation.navigate('bidding', { workerId: customerId });
     // You can navigate to another screen or perform other actions
   };
 
   const renderCustomerItem = ({ item }) => (
     <TouchableOpacity
       style={styles.customerItem}
-      
+
     >
       <Text style={styles.customerName}>{item.username}</Text>
       {/* <Text style={styles.customerLocation}>{item.location}</Text> */}
@@ -151,66 +154,66 @@ console.log("customerdata",customerData)
       <TouchableOpacity
         style={styles.chatButton}
         onPress={() => handleCustomerSelection(item._id)}
-       
+
       >
         <Text style={styles.chatButtonText}>Chat</Text>
       </TouchableOpacity>
-   
+
 
     </TouchableOpacity>
   );
 
   // const renderActivityItem = ({ item }) => (
-    
+
   //   <View style={styles.activityItem}>
-    
+
   //     <Text>User: {item.user.username}</Text>
-      
+
   //     <Text>Amount : {item.amount}</Text>
-      
+
   //   </View>
   // );
 
   return (
-    
-   
-   
+
+
+
     <View style={styles.container}>
-    <View style={styles.header}>
-  <Ionicons name="location" size={24} color="black" style={{ marginLeft: 10 ,marginTop:14}} onPress={handleLocation} />
-  <View>
-    <Text style={styles.categoryText2}>Location</Text>
-    {/* <Text style={styles.categoryTextsmall}>{address}</Text> */}
-  </View>
-  {/* Add the rest of the header content here */}
-</View>
-    
-     <View style={styles.headingContainer}>
+      <View style={styles.header}>
+        <Ionicons name="location" size={24} color="black" style={{ marginLeft: 10, marginTop: 14 }} onPress={handleLocation} />
+        <View>
+          <Text style={styles.categoryText2}>Location</Text>
+          <Text style={styles.categoryTextsmall}>{address}</Text>
+        </View>
+        {/* Add the rest of the header content here */}
+      </View>
+
+      <View style={styles.headingContainer}>
         <Text style={styles.heading}>Customers List</Text>
       </View>
       <View style={styles.listing}>
-      <FlatList
-        data={customerData}
-        keyExtractor={(item) => item._id}
-        renderItem={renderCustomerItem}
-      />
+        <FlatList
+          data={customerData}
+          keyExtractor={(item) => item._id}
+          renderItem={renderCustomerItem}
+        />
       </View>
-    {/* {customerData.users?.map(item=>(<Text>{item.username}</Text>))} */}
+      {/* {customerData.users?.map(item=>(<Text>{item.username}</Text>))} */}
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handlependinglistPress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
-          <Ionicons name="history vector" size={24} color="#FFFFFF" />
+          <Ionicons name="home-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-      
+
       {/* You can add more components or actions based on the selected customer */}
     </View>
-   
+
   );
 };
 
@@ -219,39 +222,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white', // Background color
     padding: 20,
-    width:460,
+    width: 460,
     // justifyContent: 'center',
-      alignItems: 'center',
-      left:0,
+    alignItems: 'center',
+    left: 0,
   },
-  listing:{
-    top:50,
-    marginTop:10,
-    width:440,
+  listing: {
+    top: 50,
+    marginTop: 10,
+    width: 440,
 
   },
   heading: {
     color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft:30
+    marginLeft: 30
   },
-    headingContainer: {
-      position: 'absolute',
-      width: 460,
-      height: 20,
-     
-      top: 2,
-      backgroundColor: 'white',
-      justifyContent: 'center',
-       alignItems: 'left',
-       padding:10,
-       borderRadius:8,
-       height:50,
-       marginTop:50,
-       
-     
-    },
+  headingContainer: {
+    position: 'absolute',
+    width: 460,
+    height: 20,
+
+    top: 2,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'left',
+    padding: 10,
+    borderRadius: 8,
+    height: 50,
+    marginTop: 50,
+
+
+  },
+  categoryTextsmall: {
+    fontSize: 12,
+    fontWeight: 'normal',
+    color: "white",
+    marginLeft: -1,
+    marginTop: 1,
+  },
   pageTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -259,7 +269,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'black', // Background color
     padding: 10,
     marginBottom: 20,
-    width:400,
+    width: 400,
   },
   navbar: {
     flexDirection: 'row',
@@ -269,7 +279,7 @@ const styles = StyleSheet.create({
     height: 50,
     position: 'absolute',
     bottom: 10,
-    
+
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
     overflow: 'hidden',
@@ -294,7 +304,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    
+
   },
   customerName: {
     fontSize: 16,
@@ -322,16 +332,16 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     marginTop: 10,
     backgroundColor: "grey",
-    width:450,
-    marginTop:-40,
-     padding:10
+    width: 450,
+    marginTop: -40,
+    padding: 10
   },
   categoryText2: {
     fontSize: 16,
     fontWeight: 'normal',
     color: "black",
     marginLeft: 10,
-    marginTop:18
+    marginTop: 18
   },
 });
 
