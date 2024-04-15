@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import socket from '../utils/socket';
 import { useGlobalContext } from '../GlobalContext';
 
@@ -17,6 +18,7 @@ const CustomerListPage = () => {
   const { globalState, updateGlobalState } = useGlobalContext();
   // Access the global state
   const { address } = globalState;
+  const [username, setUserName] = useState('');
 
   const [userId, setUserId] = useState(null);
 
@@ -26,12 +28,13 @@ const CustomerListPage = () => {
       if (token) {
         console.log('Token retrieved successfully');
         const decodedToken = jwtDecode(token);
-
+        setUserName(decodedToken.username);
         console.log('Token Expiry:', new Date(decodedToken.exp * 1000)); // Convert to milliseconds
 
         const { userId, username } = decodedToken;
         console.log("list page")
         console.log(decodedToken)
+        console.log("username", username);
         return { userId, username };
       } else {
         console.log('Token not found');
@@ -118,10 +121,10 @@ const CustomerListPage = () => {
 
   const navigation = useNavigation();
   const handlependinglistPress = () => {
-    navigation.navigate('pendinglist');
+    navigation.navigate('list');
   };
   const handleHistoryPress = () => {
-    navigation.navigate('map');
+    navigation.navigate('active');
   };
   const handleProfilePress = () => {
     navigation.navigate('profile');
@@ -179,18 +182,24 @@ const CustomerListPage = () => {
 
 
     <View style={styles.container}>
+    {/* <Icon name="account-circle" size={24} color="#333" style={{ marginRight: 8 }} />
+                      <Text style={styles.workerName}>{username}</Text> */}
       <View style={styles.header}>
         <Ionicons name="location" size={24} color="black" style={{ marginLeft: 10, marginTop: 14 }} onPress={handleLocation} />
         <View>
-          <Text style={styles.categoryText2}>Location</Text>
-          <Text style={styles.categoryTextsmall}>{address}</Text>
+          <Text style={styles.categoryText2}>{address}</Text>
+          {/* <Text style={styles.categoryTextsmall}></Text> */}
+        </View>
+        <View>
+           {/* <Icon name="account-circle" size={24} color="#333" style={{ marginLeft:250 ,marginTop:25}} /> */}
+                      <Text style={styles.workerName}>{username}</Text>
         </View>
         {/* Add the rest of the header content here */}
       </View>
 
-      <View style={styles.headingContainer}>
+      {/* <View style={styles.headingContainer}>
         <Text style={styles.heading}>Customers List</Text>
-      </View>
+      </View> */}
       <View style={styles.listing}>
         <FlatList
           data={customerData}
@@ -204,7 +213,7 @@ const CustomerListPage = () => {
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
-          <Ionicons name="home-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="list" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={24} color="#FFFFFF" />
@@ -342,6 +351,15 @@ const styles = StyleSheet.create({
     color: "black",
     marginLeft: 10,
     marginTop: 18
+  },
+  workerName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 0,
+    color: 'black', // Darker text color
+    padding:5,
+    marginLeft:280,
+    // marginTop:25
   },
 });
 

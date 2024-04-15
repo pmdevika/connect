@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
+
+
+ 
 
 export default function Active() {
   const [activeCustomers, setActiveCustomers] = useState([]);
   const [uid, setUid] = useState();
+  const [username, setUserName] = useState('');
+  const navigation = useNavigation();
 
   const retrieveToken = async () => {
     try {
@@ -16,8 +23,11 @@ export default function Active() {
       if (token) {
         console.log('Token retrieved successfully');
         const decodedToken = jwtDecode(token);
-        const { userId } = decodedToken;
-        setUid(userId);
+        console.log("decodeToken", decodedToken)
+        setUserName(decodedToken.username);
+        setUid(decodedToken.userId);
+        console.log("uid", uid)
+        console.log("username", username);
         return userId;
       } else {
         console.log('Token not found');
@@ -35,6 +45,16 @@ export default function Active() {
     };
     fetchData();
   }, []);
+  const handleHomePress = () => {
+    navigation.navigate('list');
+  };
+  const handleHistoryPress = () => {
+    navigation.navigate('active');
+  };
+
+  const handleProfilePress = () => {
+    navigation.navigate('profile');
+  };
 
   useEffect(() => {
     const fetchActiveWorkers = async () => {
@@ -67,21 +87,35 @@ export default function Active() {
                   <View style={styles.workerInfoContainer}>
                     <View style={styles.workerNameContainer}>
                       <Icon name="account-circle" size={24} color="#333" style={{ marginRight: 8 }} />
-                      <Text style={styles.workerName}>{item.worker.username}</Text>
+                      <Text style={styles.workerName}>{username}</Text>
                       <Text style={styles.workeramount}>Rs.{item.amount}</Text>
                     </View>
                     <Text style={styles.light}>{item.worker.profession}</Text>
-                    <Text style={styles.light}>ID: {item.worker._id}</Text>
-                    <Text style={styles.light}>{item.date}</Text>
-                    <Text style={styles.light}>{item.worker.email}</Text>
+                    
+                    <Text style={styles.light}>{item.user.username}</Text>
+                    <Text style={styles.light}>email: {item.user.email}</Text>
+                    <Text style={styles.light}>Appointment on {item.date}</Text>
+                    {/* <Text style={styles.light}>{item.worker.email}</Text> */}
                    
                   </View>
                 </TouchableOpacity>
               </View>
             )}
           />
+          
         </ScrollView>
 
+      </View>
+      <View style={styles.navbar}>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
+          <Ionicons name="home-outline" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
+          <Ionicons name="list" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
+          <Ionicons name="person-outline" size={20} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -152,5 +186,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  navbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: 'black',
+    width: 460,
+    height: 50,
+    position: 'absolute',
+    bottom: 6,
+    
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    overflow: 'hidden',
+  },
+  navbarButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 1,
   },
 });

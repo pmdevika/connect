@@ -2,33 +2,79 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { jwtDecode } from "jwt-decode";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Then use AsyncStorage in your code as needed
+
 import { useNavigation } from '@react-navigation/native';
 
 const WorkerDetailsPage = () => {
   const [workerData, setWorkerData] = useState({});
   const navigation = useNavigation();
+  const [uid, setUid] = useState();
+  const [username, setUserName] = useState('');
+  const [email,setEmail]=useState('');
+const [phone,setPhone]=useState()
+const [address,setAddress]=useState('')
+
+  const retrieveToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+
+      if (token) {
+        console.log('Token retrieved successfully');
+        const decodedToken = jwtDecode(token);
+        console.log("decodeToken", decodedToken)
+        setUserName(decodedToken.username);
+        setUid(decodedToken.userId)
+        setEmail(decodedToken.email);
+        setPhone(decodedToken.phone);
+        setAddress(decodedToken.address);
+        console.log("uid", uid)
+        console.log("username", username);
+        return userId;
+      } else {
+        console.log('Token not found');
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to retrieve token', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await retrieveToken();
+    };
+    fetchData();
+  }, []);
 
   const handleHomePress = () => {
     navigation.navigate('list');
+  };
+  const handleHistoryPress = () => {
+    navigation.navigate('active');
   };
 
   const handleProfilePress = () => {
     navigation.navigate('profile');
   };
 
-  useEffect(() => {
-    const fetchWorkerDetails = async () => {
-      try {
-        const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/workerDetails`); // Replace with your API endpoint
-        const fetchedWorkerData = response.data;
-        setWorkerData(fetchedWorkerData);
-      } catch (error) {
-        console.error('Error fetching worker data:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchWorkerDetails = async () => {
+  //     try {
+  //       const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/workerDetails`); // Replace with your API endpoint
+  //       const fetchedWorkerData = response.data;
+  //       setWorkerData(fetchedWorkerData);
+  //     } catch (error) {
+  //       console.error('Error fetching worker data:', error);
+  //     }
+  //   };
 
-    fetchWorkerDetails();
-  }, []);
+  //   fetchWorkerDetails();
+  // }, []);
 
   return (
     <View style={styles.container}>
@@ -37,7 +83,7 @@ const WorkerDetailsPage = () => {
       </View>
       <View style={styles.detailItem}>
         <Text style={styles.label}>Name:</Text>
-        <Text style={styles.value}>{workerData.name}</Text>
+        <Text style={styles.value}>{username}</Text>
       </View>
       <View style={styles.detailItem}>
         <Text style={styles.label}>Age:</Text>
@@ -45,19 +91,19 @@ const WorkerDetailsPage = () => {
       </View>
       <View style={styles.detailItem}>
         <Text style={styles.label}>Email:</Text>
-        <Text style={styles.value}>{workerData.email}</Text>
+        <Text style={styles.value}>{email}</Text>
       </View>
       <View style={styles.detailItem}>
         <Text style={styles.label}>Phone:</Text>
-        <Text style={styles.value}>{workerData.phone}</Text>
+        <Text style={styles.value}>{phone}</Text>
       </View>
       <View style={styles.detailItem}>
         <Text style={styles.label}>ID:</Text>
-        <Text style={styles.value}>{workerData.id}</Text>
+        <Text style={styles.value}>{uid}</Text>
       </View>
       <View style={styles.detailItem}>
-        <Text style={styles.label}>Experience:</Text>
-        <Text style={styles.value}>{workerData.experience}</Text>
+        <Text style={styles.label}>Address:</Text>
+        <Text style={styles.value}>{address}</Text>
       </View>
       <View style={styles.detailItem}>
         <Text style={styles.label}>Profession:</Text>
@@ -66,6 +112,9 @@ const WorkerDetailsPage = () => {
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
+          <Ionicons name="list" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={20} color="#FFFFFF" />
@@ -116,7 +165,8 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 16,
-    color: '#666666',
+    // color: '#666666',
+    color:"black"
   },
   navbar: {
     flexDirection: 'row',
