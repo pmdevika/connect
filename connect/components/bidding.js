@@ -16,7 +16,7 @@ const Bidding = ({ route }) => {
   const scrollViewRef = useRef();
   const { workerId } = route.params;
   const [componentMounted, setComponentMounted] = useState(false);
-  // console.log(workerId)
+  // console.log(workerId)F
   const navigation = useNavigation();
   const [userId, setUserId] = useState('');
   const [uid, setUId] = useState('');
@@ -35,7 +35,7 @@ const Bidding = ({ route }) => {
   const [status, setStatus] = useState(-1);
   const generateID = () => Math.random().toString(36).substring(2, 10);
   const [showMessage, setShowMessage] = useState(false);
-  const [bidId,setBidId]=useState(null)
+  const [bidId, setBidId] = useState(null)
 
 
   const retrieveToken = async () => {
@@ -110,8 +110,8 @@ const Bidding = ({ route }) => {
     socket.on('accepted', (BidData) => {
       console.log('Bid accepted', BidData);
       if (BidData.sender.role === 'worker')
-        setUserAccepted(true);
-      else setSelfAccepted(true);
+        setSelfAccepted(true);
+      else setUserAccepted(true);
 
       setLabel(BidData.amount);
       setBidId(BidData._id);
@@ -250,7 +250,7 @@ const Bidding = ({ route }) => {
       timestamp: currentTime,
       chatId: id,
       userId: workerId,
-      uid,
+      workerId: uid,
       sender: { role: 'worker' },
     };
     // Emit the bid message via socket
@@ -300,7 +300,7 @@ const Bidding = ({ route }) => {
   return (
     <View style={styles.container}>
 
-      <Text style={styles.heading}>Chat With {username}</Text>
+      <Text style={styles.heading}></Text>
       {
         (status === -1) &&
         <View style={styles.head}>
@@ -330,12 +330,7 @@ const Bidding = ({ route }) => {
             <Text style={styles.whiteText}>click to Confirm</Text>
             <Text style={styles.labelText}> Rs.{label}</Text>
             <View style={styles.acceptRejectContainer}>
-              <Pressable style={styles.acceptButton} onPress={handleConfirm}>
-                <Text style={styles.modaltext1} >CONFIRM</Text>
-              </Pressable>
-              <Pressable style={styles.acceptButton} onPress={handleReject}>
-                <Text style={styles.modaltext1}>CLOSE</Text>
-              </Pressable>
+              <Text style={styles.modaltext1}>WAITING for user to fix</Text>
             </View>
           </View>
 
@@ -347,12 +342,7 @@ const Bidding = ({ route }) => {
             <Text style={styles.whiteText}>user accepted the Request</Text>
             <Text style={styles.labelText}> {label}</Text>
             <View style={styles.acceptRejectContainer}>
-              <Pressable style={styles.acceptButton} onPress={handleConfirm}>
-                <Text style={styles.modaltext1} >CONFIRM</Text>
-              </Pressable>
-              <Pressable style={styles.acceptButton} onPress={handleReject}>
-                <Text style={styles.modaltext1}>CLOSE</Text>
-              </Pressable>
+              <Text style={styles.modaltext1}>WAITING for user to fix</Text>
             </View>
           </View>
 
@@ -398,7 +388,6 @@ const Bidding = ({ route }) => {
                           <Pressable style={styles.rejectButton} onPress={handleOkay}>
                             <Text style={styles.modaltext}>Okay</Text>
                           </Pressable>
-
                         </View>
                       )}
                       <Pressable style={styles.rejectButton} onPress={handleReject}>
@@ -655,7 +644,24 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 16,
   },
+  messageUserText: {
 
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 10,
+  },
+  messageWorkerText: {
+
+    backgroundColor: '#C0C0C0',
+    padding: 10,
+    borderRadius: 10,
+  },
+  UserContainer: {
+    alignSelf: 'flex-start',
+  },
+  WorkerContainer: {
+    alignSelf: 'flex-end',
+  },
 });
 
 
