@@ -30,7 +30,7 @@ export default function App() {
       <Stack.Screen name="getstarted" component={GetStarted} options={{ title: '' }} />
         <Stack.Screen name="home" component={Home} options={{ title: ' ' }} />
         <Stack.Screen name="list" component={List} options={{ title: 'Customers List' }} />
-        <Stack.Screen name="history" component={History} options={{ title: '' }} />
+        <Stack.Screen name="history" component={History} options={{ title: 'Work History' }} />
         <Stack.Screen name="profile" component={profile} options={{ title: 'Personal Information' }} />
         <Stack.Screen name="messages" component={Messages} options={{ title: '' }} />
         <Stack.Screen name="bidding" component={bidding} options={{ title: '' }} />
@@ -40,7 +40,7 @@ export default function App() {
         <Stack.Screen name="map" component={map} options={{ title: '' }} />
         <Stack.Screen name="pendinglist" component={pendinglist} options={{ title: '' }} />
         <Stack.Screen name="grievence" component={grievence} options={{ title: '' }} />
-        <Stack.Screen name="active" component={Active} options={{ title: 'Active Appointments' }} />
+        <Stack.Screen name="active" component={Active} options={{ title: 'Active Appointment' }} />
       </Stack.Navigator>
     </NavigationContainer>
     </GlobalProvider>

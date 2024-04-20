@@ -205,7 +205,7 @@ const Bidding = ({ route }) => {
     if (message.trim() !== '') {
       const currentTime = getCurrentTime();
       const newMessage = {
-        Fid: generateID(),
+        id: generateID(),
         sender: { role: 'worker' },
         contentType: 'text',
         content: { text: message },
@@ -248,7 +248,7 @@ const Bidding = ({ route }) => {
     const BidData = {
       amount: parseInt(amt),
       timestamp: currentTime,
-      chatId: id,
+      // chatId: id,
       userId: workerId,
       workerId: uid,
       sender: { role: 'worker' },
@@ -373,9 +373,9 @@ const Bidding = ({ route }) => {
                   { backgroundColor: msg.sender.role === 'worker' ? '#f0f0f0' : '#C0C0C0' }
                 ]}>
                   <Text style={styles.labelText}>{msg.content.bidAmount}</Text>
-                  <Text style={styles.timerText}>
+                  {/* <Text style={styles.timerText}>
                     Timer: {Math.floor(timer / 60)}:{timer % 60 < 10 ? '0' : ''}{timer % 60}
-                  </Text>
+                  </Text> */}
                   {msg.sender.role !== "worker" ? (
                     <View style={styles.acceptRejectContainer}>
                       <Pressable style={styles.acceptButton} onPress={() => handleAccept(msg.content.bidAmount, msg._id)}>
@@ -452,7 +452,7 @@ const Bidding = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+   container: {
     flex: 1,
     alignItems: 'center',
     backgroundColor: '#F5F5F5',
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: 'bold',
     fontSize: 18,
-    padding: 10,
+    padding: 5,
   },
   profileIcon: {
     marginRight: 10,
@@ -488,17 +488,39 @@ const styles = StyleSheet.create({
     marginLeft: 20, // Add margin to messages to avoid overlap with label
   },
   messageContent: {
-    flex: 1,
     flexDirection: 'column',
-    justifyContent: 'flex-start',
     alignItems: 'flex-start',
-    margin: 5,
+    marginRight: 20,
   },
-  messageText: {
-    backgroundColor: '#f0f0f0',
+  messageUserText: {
+
+    backgroundColor: 'white',
     padding: 10,
     borderRadius: 10,
+    shadowColor: '#33186B',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
+  messageWorkerText: {
+
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: '#8B1874',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
   timeText: {
     marginTop: 0,
     fontSize: 12,
@@ -510,9 +532,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    bottom: '17%',
+    bottom: '18%',
     padding: '4%',
-    marginTop: 50,
+    marginTop: 60,
   },
   input: {
     flex: 1,
@@ -523,7 +545,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   sendButton: {
-    backgroundColor: 'black',
+    backgroundColor: '#a06d95',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 5,
@@ -540,10 +562,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 10,
     margin: 10,
+
   },
   labelText: {
-    fontSize: 18,
+    fontSize: 24,
     marginBottom: 10,
+    fontWeight: 'bold',
+    color: 'black', // Adjust color as needed
+    padding: 20
   },
   timerText: {
     fontSize: 16,
@@ -553,7 +579,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   acceptButton: {
-    backgroundColor: "black",
+    backgroundColor: "#a06d95",
     paddingVertical: 10,
     paddingHorizontal: 20,
     marginHorizontal: 5,
@@ -595,7 +621,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   modalbutton: {
-    backgroundColor: "black",
+    backgroundColor: "#a06d95",
     paddingVertical: 10,
     paddingHorizontal: 20,
     marginHorizontal: 5,
@@ -606,7 +632,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   popuplabelContainer: {
-    backgroundColor: 'grey',
+    backgroundColor: '#a06d95',
     borderRadius: 15,
     margin: 10,
     height: '50%',
@@ -615,52 +641,16 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   whiteText: {
-    color: 'white',
+    color: '#d6c25a',
     fontSize: 16,
+    padding: 10
     // Additional styles if needed
-  },
-
-  messageContainer1: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 700,
-    width: 200,
-    marginLeft: 135,
-    alignItems: 'center',
-  },
-  messageText1: {
-    color: 'white',
-    fontSize: 16,
-  },
-  rejectButton: {
-    backgroundColor: "black",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginHorizontal: 5,
-    borderRadius: 5,
-  },
-  modaltext: {
-    color: "#FFF",
-    fontSize: 16,
-  },
-  messageUserText: {
-
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    borderRadius: 10,
-  },
-  messageWorkerText: {
-
-    backgroundColor: '#C0C0C0',
-    padding: 10,
-    borderRadius: 10,
-  },
-  UserContainer: {
-    alignSelf: 'flex-start',
   },
   WorkerContainer: {
     alignSelf: 'flex-end',
+  },
+  UserContainer: {
+    alignSelf: 'flex-start',
   },
 });
 

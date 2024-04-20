@@ -13,7 +13,7 @@ export default function Home({ navigation }) {
         <View style={styles.imageContainer}>
           {/* <Image source={require('../assets/1.png')} style={styles.image} /> */}
         
-          <Image source={require('../assets/connect1.png')} style={styles.image} />
+          <Image source={require('../assets/kuduu.jpg')} style={styles.image} />
        
         </View>
       </View>
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     height: '60%',
   },
   image: { 
-    width: 250,
+    width: 299,
     height: 250,
     alignSelf: 'center',
     top:40

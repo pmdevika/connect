@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet,Image} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
@@ -13,11 +13,12 @@ const WorkerDetailsPage = () => {
   const [workerData, setWorkerData] = useState({});
   const navigation = useNavigation();
   const [uid, setUid] = useState();
+  const [empid, setempid] = useState();
   const [username, setUserName] = useState('');
   const [email,setEmail]=useState('');
 const [phone,setPhone]=useState()
 const [address,setAddress]=useState('')
-
+const [details,setDetails]=useState([]);
   const retrieveToken = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -28,9 +29,6 @@ const [address,setAddress]=useState('')
         console.log("decodeToken", decodedToken)
         setUserName(decodedToken.username);
         setUid(decodedToken.userId)
-        setEmail(decodedToken.email);
-        setPhone(decodedToken.phone);
-        setAddress(decodedToken.address);
         console.log("uid", uid)
         console.log("username", username);
         return userId;
@@ -39,7 +37,7 @@ const [address,setAddress]=useState('')
         return null;
       }
     } catch (error) {
-      console.error('Failed to retrieve token', error);
+      // console.error('Failed to retrieve token', error);
       return null;
     }
   };
@@ -61,63 +59,115 @@ const [address,setAddress]=useState('')
   const handleProfilePress = () => {
     navigation.navigate('profile');
   };
+  const handleHistoryyPress = () => {
+    navigation.navigate('history');
+  };
+  // setempid(userId)
+  useEffect(() => {
+    const fetchWorkerDetails = async () => {
+      try {
+        if(uid)
+        {
+        const empid=uid;
+        console.log(empid)
+        console.log(`${process.env.EXPO_PUBLIC_API_URL}/emp/workers/${empid}`)
+        const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/emp/workers/${empid}`); // Replace with your API endpoint
+         
+        setDetails(response.data);
+      
+        console.log('details of ',details)}
+      } catch (error) {
+        console.error('Error fetching worker data:', error);
+      }
+    };
 
-  // useEffect(() => {
-  //   const fetchWorkerDetails = async () => {
-  //     try {
-  //       const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/workerDetails`); // Replace with your API endpoint
-  //       const fetchedWorkerData = response.data;
-  //       setWorkerData(fetchedWorkerData);
-  //     } catch (error) {
-  //       console.error('Error fetching worker data:', error);
-  //     }
-  //   };
-
-  //   fetchWorkerDetails();
-  // }, []);
+    fetchWorkerDetails();
+  }, [uid]);
 
   return (
     <View style={styles.container}>
-      <View style={styles.headingContainer}>
+      {/* <View style={styles.headingContainer}>
         <Text style={styles.heading}>Personal Details</Text>
+      </View> */}
+      <View style={styles.profileContainer}>
+      <Ionicons name="person-outline" size={100} color="#a06d95" />
+        <Text style={styles.userName}>{details.username}</Text>  
+        </View>
+
+        <View style={styles.bottom}>
+      <View style={styles.detailContainer}>
+            <View>
+              <Text style={styles.semilight}>Profession</Text>
+              <Text style={styles.light}>{details.profession}</Text>
+            </View>
+            <View style={styles.horizontalLine} />
+            <View>
+              <Text style={styles.semilight}>EMPID</Text>
+              <Text style={styles.light}>{details.empid}</Text>
+            </View>
+            <View style={styles.horizontalLine} />
+            <View>
+              <Text style={styles.semilight}>Email</Text>
+              <Text style={styles.light}>{details.email}</Text>
+            </View>
+            <View style={styles.horizontalLine} />
+            <View>
+              <Text style={styles.semilight}>Phone</Text>
+              <Text style={styles.light}>{details.phone}</Text>
+            </View>
+            <View style={styles.horizontalLine} />
+            <View>  
+            {/* <TouchableOpacity style={styles.button} onPress={handleHistory}>
+                <Text style={styles.buttonText}>History</Text>
+            </TouchableOpacity> */}
+            </View>
+          </View>
       </View>
-      <View style={styles.detailItem}>
-        <Text style={styles.label}>Name:</Text>
-        <Text style={styles.value}>{username}</Text>
-      </View>
-      <View style={styles.detailItem}>
+
+        {/* <View>
+              <Text style={styles.semilight}>EmpId</Text>
+              <Text style={styles.light}>{details.empid}</Text>
+            </View> */}
+      {/* <View style={styles.detailItem}>
         <Text style={styles.label}>Age:</Text>
         <Text style={styles.value}>{workerData.age}</Text>
-      </View>
-      <View style={styles.detailItem}>
+      </View> */}
+      {/* <View style={styles.detailItem}>
         <Text style={styles.label}>Email:</Text>
-        <Text style={styles.value}>{email}</Text>
+        <Text style={styles.value}>{details.email}</Text>
       </View>
       <View style={styles.detailItem}>
         <Text style={styles.label}>Phone:</Text>
-        <Text style={styles.value}>{phone}</Text>
+        <Text style={styles.value}>{details.phone}</Text>
       </View>
       <View style={styles.detailItem}>
-        <Text style={styles.label}>ID:</Text>
-        <Text style={styles.value}>{uid}</Text>
-      </View>
-      <View style={styles.detailItem}>
+        <Text style={styles.label}>EmpID:</Text>
+        <Text style={styles.value}>{details.empid}</Text>
+      </View> */}
+      {/* <View style={styles.detailItem}>
         <Text style={styles.label}>Address:</Text>
-        <Text style={styles.value}>{address}</Text>
-      </View>
-      <View style={styles.detailItem}>
+        <Text style={styles.value}>{workerData.address}</Text>
+      </View> */}
+      {/* <View style={styles.detailItem}>
         <Text style={styles.label}>Profession:</Text>
-        <Text style={styles.value}>{workerData.Profession}</Text>
-      </View>
+        <Text style={styles.value}>{details.profession}</Text>
+      </View> */}
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
+          <Text style={styles.iconText}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
           <Ionicons name="list" size={24} color="#FFFFFF" />
+          <Text style={styles.iconText}>Active</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.iconText}>Profile</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryyPress}>
+          <Ionicons name="time-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.iconText}>History</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -150,7 +200,7 @@ const styles = StyleSheet.create({
    left:3,
     top: 2,
     bottom:100,
-    backgroundColor: 'black',
+    backgroundColor: '#A06D95',
     justifyContent: 'center',
      alignItems: 'left',
      padding:20,
@@ -171,9 +221,9 @@ const styles = StyleSheet.create({
   navbar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'black',
+    backgroundColor: '#8B1874',
     width: 460,
-    height: 50,
+    height: 55,
     position: 'absolute',
     bottom: 6,
     
@@ -186,6 +236,60 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 1,
+  },
+  iconText: {
+    color: '#FFFFFF',
+    marginTop: 5, // Adjust as needed
+  },
+  head: {
+    backgroundColor: 'white',
+    width: '100%',
+    height: 40,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  profileImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    marginBottom: 20,
+   
+  }, 
+  profileContainer: {
+    alignItems: 'center',
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  semilight: {
+    fontSize: 16,
+    fontWeight: '200',
+    marginBottom: 4,
+    color: '#333',
+  },
+  light: {
+    fontSize: 16,
+    fontWeight: '400',
+    marginBottom: 10,
+    color: 'black',
+  },
+  detailContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'left',
+    paddingHorizontal: 20,
+  },
+  bottom:{
+    marginTop:50,
+  },
+  horizontalLine: {
+    borderBottomColor: '#a06d95',
+    borderBottomWidth: 1,
+    width: '100%',
+    marginVertical: 10,
   },
 });
 

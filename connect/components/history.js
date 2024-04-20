@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity,TouchableWithoutFeedback, FlatList, ScrollView } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 
-const CustomerListPage = () => {
-  const [activityHistory, setActivityHistory] = useState([]);
-  const [userId, setUserId] = useState(null);
+
+ 
+
+export default function Active() {
+  const [activeCustomers, setActiveCustomers] = useState([]);
+  const [uid, setUid] = useState();
+  const [username, setUserName] = useState('');
   const navigation = useNavigation();
+  const handleHistoryyPress = () => {
+    navigation.navigate('history');
+  };
 
   const retrieveToken = async () => {
     try {
@@ -17,156 +25,195 @@ const CustomerListPage = () => {
 
       if (token) {
         console.log('Token retrieved successfully');
-        const decodedToken = jwt_decode(token);
-        console.log(decodedToken);
-        console.log('Token Expiry:', new Date(decodedToken.exp * 1000)); // Convert to milliseconds
-
-        const { userId, username } = decodedToken;
-        console.log("history page")
-        console.log("decoded token")
-        return { userId, username };
+        const decodedToken = jwtDecode(token);
+        setUid(decodedToken.userId)
+        console.log("decodeToken", decodedToken)
+        
+        return userId;
       } else {
         console.log('Token not found');
         return null;
       }
     } catch (error) {
-      console.error('Failed to retrieve token', error);
+      // console.error('Failed to retrieve token', error);
       return null;
     }
   };
 
   useEffect(() => {
     const fetchData = async () => {
-      const { userId, username } = await retrieveToken();
-      setUserId(userId);
+      await retrieveToken();
     };
     fetchData();
   }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const { userId, username } = await retrieveToken();
-  
-      if (userId) {
-        try {
-          const response = await fetch(
-           ` https://connect-q46w.onrender.com/appointment/appointments-history/${userId}`
-          );
-          const history = await response.json();
-          console.log(history);
-          setActivityHistory(history);
-        } catch (error) {
-          console.error('Error fetching activity history:', error);
-        }
-      } else {
-        console.log('User ID is null or undefined');
-      }
-    };
-  
-    fetchData();
-  }, [userId]);
-
-  useEffect(() => {
-    console.log("Updated activity history in useEffect:", activityHistory);
-  }, [activityHistory]);
-  
   const handleHomePress = () => {
     navigation.navigate('list');
   };
   const handleHistoryPress = () => {
-    navigation.navigate('history');
+    navigation.navigate('active');
   };
+
   const handleProfilePress = () => {
     navigation.navigate('profile');
   };
-  console.log(567)
-  const renderActivityItem = ({ item }) => (
-    
-    <View style={styles.activityItem}>
-    
-      <Text>User: {item.user.username}</Text>
-      
-      <Text>Amount : {item.amount}</Text>
-      
-    </View>
-  );
+  const handleCustomerSelection=()=>{
+    navigation.navigate('grievence');
+  }
+  useEffect(() => {
+    const fetchActiveWorkers = async () => {
+      console.log('id', uid);
+      try {
+        if (uid) {
+          const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/appointment/worker-history/${uid}`);
+          console.log('successfully listed active customers', response.data);
+          setActiveCustomers(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching active cutomers:', error);
+      }
+    };
+
+    fetchActiveWorkers();
+  }, [uid]);
 
   return (
     <View style={styles.container}>
-      <View style={styles.headingContainer}>
-        <Text style={styles.heading}>Activities</Text>
-      </View>
-      <View style={styles.listing}>
+      <View style={styles.workerListContainer}>
+        {/* <Text style={styles.heading}>Active Appointments</Text> */}
+
+        
         <FlatList
-          data={activityHistory}
-          keyExtractor={(item) => item._id.toString()}
-          renderItem={renderActivityItem}
-        />
-      </View>
+  data={activeCustomers}
+  renderItem={({ item }) => (
+    <View style={styles.workerContainer}>
+     
+        <TouchableOpacity style={styles.workerItem}>
+          <View style={styles.workerInfoContainer}>
+            <View style={styles.workerNameContainer}>
+            </View>
+            
+            <Text style={styles.light}>{item.worker.profession}</Text>
+            <Text style={styles.workeramount}>{item.user.username}</Text>
+            <Text style={styles.light}>Amount Paid:Rs.{item.amount}</Text>
+            <Text style={styles.light}>email: {item.user.email}</Text>
+
+            <Text style={styles.light}>Appointment on {item.date}</Text>
+            
+          </View>
+          <TouchableOpacity
+        style={styles.chatButton}
+        onPress={() => handleCustomerSelection()}
+
+      >
+        <Text style={styles.chatButtonText}>Submit Grievence</Text>
+      </TouchableOpacity>
+
+        </TouchableOpacity>
+     
+    </View>
+  )}
+/>
+          
       
+
+      </View>
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
+          <Text style={styles.iconText}>Home</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
-          <Ionicons name="activity-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity> */}
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
+          <Ionicons name="list" size={24} color="#FFFFFF" />
+          <Text style={styles.iconText}>Active</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.iconText}>Profile</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryyPress}>
+          <Ionicons name="time-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.iconText}>History</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
+  heading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  workerListContainer: {
+    flex: 1,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    backgroundColor: '#fff',
+    padding: 16,
+    marginTop: -20,
+  },
+  workerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 1.5)',
+    shadowColor: '#8B1874',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  workerInfoContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  workerNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  workerName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 0,
+    color: 'grey', // Darker text color
+    padding:5
+  },
+  workeramount: {
+    marginLeft:"0%",
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 1,
+    color: '#d6c25a', // Darker text color
+  },
+  light: {
+    fontSize: 14,
+    fontWeight: '300',
+    marginBottom: 4,
+    color: '#333', // Darker text color
+  },
   container: {
     flex: 1,
-    backgroundColor: 'white',
-    padding: 20,
-    width: 375,
-    alignItems: 'center',
-    left:0,
-  },
-  listing: {
-    top: 50,
-    width: 350,
-  },
-  heading: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  headingContainer: {
-    position: 'absolute',
-    width: 370,
-    height: 40,
-    top: 2,
-    backgroundColor: 'black',
-    justifyContent: 'center',
-    alignItems: 'left',
-    padding: 20,
-    borderRadius: 10,
-    height: 50,
-  },
-  pageTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
-    backgroundColor: 'black',
-    padding: 10,
-    marginBottom: 20,
-    width: 400,
+    backgroundColor: '#fff',
   },
   navbar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'black',
-    width: 350,
-    height: 39,
+    backgroundColor: '#8B1874',
+    width: 460,
+    height: 55,
     position: 'absolute',
-    bottom: 10,
-
+    bottom: 6,
+    
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
     overflow: 'hidden',
@@ -175,23 +222,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    padding: 1,
   },
-
-  activityItem: {
-    backgroundColor: '#fffff9',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#7198A4',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  iconText: {
+    color: '#FFFFFF',
+    marginTop: 5, // Adjust as needed
+  },
+  chatButton: {
+    backgroundColor: '#A06D95',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    marginLeft:100
+  },
+  chatButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });
-
-export default CustomerListPage;

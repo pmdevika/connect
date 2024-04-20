@@ -55,6 +55,9 @@ const CustomerListPage = () => {
   const handleLocation = () => {
     navigation.navigate('map')
   }
+  const handleHistoryyPress = () => {
+    navigation.navigate('history');
+  };
   // const [selfaddress, setselfAddress] = useState('');
 
   useEffect(() => {
@@ -185,7 +188,7 @@ const CustomerListPage = () => {
     {/* <Icon name="account-circle" size={24} color="#333" style={{ marginRight: 8 }} />
                       <Text style={styles.workerName}>{username}</Text> */}
       <View style={styles.header}>
-        <Ionicons name="location" size={24} color="black" style={{ marginLeft: 10, marginTop: 14 }} onPress={handleLocation} />
+        <Ionicons name="location" size={24} color="white" style={{ marginLeft: 10, marginTop: 14 }} onPress={handleLocation} />
         <View>
           <Text style={styles.categoryText2}>{address}</Text>
           {/* <Text style={styles.categoryTextsmall}></Text> */}
@@ -211,12 +214,22 @@ const CustomerListPage = () => {
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handlependinglistPress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
+       
+      
+
+        <Text style={styles.iconText}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
           <Ionicons name="list" size={24} color="#FFFFFF" />
+          <Text style={styles.iconText}>Active</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
-          <Ionicons name="person-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="person-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.iconText}>Profile</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryyPress}>
+          <Ionicons name="time-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.iconText}>History</Text>
         </TouchableOpacity>
       </View>
 
@@ -283,7 +296,7 @@ const styles = StyleSheet.create({
   navbar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'black',
+    backgroundColor: '#8B1874',
     width: 450,
     height: 50,
     position: 'absolute',
@@ -305,7 +318,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#7198A4',
+    shadowColor: '#8B1874',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -326,7 +339,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   chatButton: {
-    backgroundColor: 'grey',
+    backgroundColor: '#A06D95',
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
@@ -340,7 +353,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 0,
     marginTop: 10,
-    backgroundColor: "grey",
+    backgroundColor: "#A06D95",
     width: 450,
     marginTop: -40,
     padding: 10
@@ -348,7 +361,7 @@ const styles = StyleSheet.create({
   categoryText2: {
     fontSize: 16,
     fontWeight: 'normal',
-    color: "black",
+    color: "white",
     marginLeft: 10,
     marginTop: 18
   },
@@ -356,10 +369,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 0,
-    color: 'black', // Darker text color
+    color: 'white', // Darker text color
     padding:5,
     marginLeft:280,
     // marginTop:25
+  },
+  iconText: {
+    color: '#FFFFFF',
+    marginTop: 5, // Adjust as needed
   },
 });
 

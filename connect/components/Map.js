@@ -142,6 +142,7 @@ export default function App() {
         try {
             const { userId, username } = await retrieveToken();
             // setUId(username);
+           
 
             if (markerPosition) {
                 const loc_address = await fetchAddress(markerPosition)
@@ -171,6 +172,41 @@ export default function App() {
             console.error('Error handling location update:', error);
         }
     };
+
+
+
+    // const handleLocationUpdate = async () => {
+    //     try {
+    //         const { userId, username } = await retrieveToken();
+           
+    //         if (markerPosition) {
+    //             // Fetch the address asynchronously
+    //             const loc_address = await fetchAddress(markerPosition);
+                
+    //             // Update the global state with the fetched address
+    //             updateGlobalState({ address: loc_address });
+    
+    //             // Construct the request body with the fetched address
+    //             const requestBody = {
+    //                 workerId: userId,
+    //                 location: {
+    //                     latitude: markerPosition.latitude,
+    //                     longitude: markerPosition.longitude,
+    //                 },
+    //                 address: loc_address // Use the fetched address here
+    //             };
+                
+    //             // Post the request with the updated request body
+    //             const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/emp/savelocation`, requestBody);
+    //             console.log(response.data);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error handling location update:', error);
+    //     }
+    // };
+    
+
+
 
     // handleLocationUpdate();
     // }, [markerPosition]);

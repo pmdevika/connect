@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
 import "core-js/stable/atob";
+import { Alert } from 'react-native';
 
 export default function Login() {
   const [empid, setEmpid] = useState('');
@@ -73,41 +74,55 @@ export default function Login() {
   // };
 
  
-  const handleButtonPress = () => {
-    const url = `${process.env.EXPO_PUBLIC_API_URL}/emp/login`;
-    console.log({
-      empid,password
-    })
-    const request = axios.post(url, {
-      empid,password
+ 
+
+const handleButtonPress = async () => {
+  const url = `${process.env.EXPO_PUBLIC_API_URL}/emp/login`;
+  console.log({
+    empid,
+    password
+  })
+
+  try {
+    const response = await axios.post(url, {
+      empid,
+      password
     });
-  
-    console.log('Request:', request);
-  
-    request
-      .then(response => {
-        // Handle the successful response
-        console.log('Response:', response.data);
-        const token=response.data.token;
-        storeToken(token)
-        console.log("token stored")
-        const data=retrieveToken();
-        console.log(data)
-        navigation.navigate('list');
-      })
-      .catch(error => {
-        // Handle errors, including 404 Not Found
-        console.error('Error:', error);
-      });
-  };
-  
+
+    console.log('Response:', response.data);
+    const token = response.data.token;
+    storeToken(token);
+    console.log("Token stored");
+    const data = retrieveToken();
+    console.log(data);
+    navigation.navigate('list');
+  } catch (error) {
+    // Handle errors, including 404 Not Found
+    // console.error('Error:', error);
+
+    if (error.response && error.response.status === 401) {
+      // Unauthorized - invalid credentials
+      Alert.alert('Invalid Credentials', 'Please check your username and password and try again.');
+    } else {
+      // Other errors
+      Alert.alert('Error', 'An unexpected error occurred. Please try again later.');
+    }
+  }
+};
+
 
   return (
     <View style={styles.container}>
      <View style={styles.imageContainer}>
           {/* <Image source={require('../assets/1.png')} style={styles.image} /> */}
         
-          <Image source={require('../assets/connect2.png')} style={styles.image} />
+          {/* <Image source={require('../assets/connect2.png')} style={styles.image} /> */}
+         
+          {/* <Image source={require('../assets/1.png')} style={styles.image} /> */}
+        
+          <Image source={require('../assets/kudumba.jpg')} style={styles.image} />
+       
+       
        
         </View>
       <View style={styles.label}>
@@ -164,11 +179,11 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 12,
     borderWidth: 0.5,
-    borderColor: '010101', // Slightly lighter color for borders
+    borderColor: '#010101', // Slightly lighter color for borders
     marginTop: 10,
   },
   loginbtn: {
-    backgroundColor: 'black', // White background color
+    backgroundColor: '#A06D95', // White background color
     borderRadius: 10,
     padding: 5,
     width: 100,
@@ -197,8 +212,8 @@ const styles = StyleSheet.create({
   
   },
   image: { 
-    width: 100,
-    height: 100,
+    width: 130,
+    height: 110,
     alignSelf: 'center',
     top:1
   },

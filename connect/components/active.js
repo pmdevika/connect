@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, FlatList, ScrollView ,Alert} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
+
 import { useNavigation } from '@react-navigation/native';
 
 
@@ -15,7 +16,14 @@ export default function Active() {
   const [uid, setUid] = useState();
   const [username, setUserName] = useState('');
   const navigation = useNavigation();
+  const [expanded, setExpanded] = useState(false);
+  const toggleExpansion = () => {
+    setExpanded(!expanded);
+  };
+  const [isDone, setIsDone] = useState(false);
 
+  const handleItemPress = () => {
+    setIsDone(!isDone);}
   const retrieveToken = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -34,7 +42,7 @@ export default function Active() {
         return null;
       }
     } catch (error) {
-      console.error('Failed to retrieve token', error);
+      // console.error('Failed to retrieve token', error);
       return null;
     }
   };
@@ -51,10 +59,19 @@ export default function Active() {
   const handleHistoryPress = () => {
     navigation.navigate('active');
   };
+  const handleTaskDone = () => {
+    
+    Alert.alert(
+      "You've indicated that you've begun the task.")
+  };
 
   const handleProfilePress = () => {
     navigation.navigate('profile');
   };
+  const handleHistoryyPress = () => {
+    navigation.navigate('history');
+  };
+  
 
   useEffect(() => {
     const fetchActiveWorkers = async () => {
@@ -78,43 +95,79 @@ export default function Active() {
       <View style={styles.workerListContainer}>
         {/* <Text style={styles.heading}>Active Appointments</Text> */}
 
-        <ScrollView>
+        
           <FlatList
             data={activeCustomers}
             renderItem={({ item }) => (
               <View style={styles.workerContainer}>
-                <TouchableOpacity style={styles.workerItem}>
-                  <View style={styles.workerInfoContainer}>
+                <TouchableOpacity style={styles.workerItem} onPress={toggleExpansion}>
+      <View style={styles.workerInfoContainer}>
+           <View style={styles.workerInfoContainer}>
                     <View style={styles.workerNameContainer}>
-                      <Icon name="account-circle" size={24} color="#333" style={{ marginRight: 8 }} />
+                      <Icon name="account-circle" size={24} color="#A06D95" style={{ marginRight: 8 }} />
                       <Text style={styles.workerName}>{username}</Text>
                       <Text style={styles.workeramount}>Rs.{item.amount}</Text>
                     </View>
-                    <Text style={styles.light}>{item.worker.profession}</Text>
                     
-                    <Text style={styles.light}>{item.user.username}</Text>
-                    <Text style={styles.light}>email: {item.user.email}</Text>
-                    <Text style={styles.light}>Appointment on {item.date}</Text>
+                    <Text style={styles.light}>Username: {item.user.username}</Text>
+            <Text style={styles.light}>Email: {item.user.email}</Text>
+            <Text style={styles.light}>Appointment Date: {item.date}</Text>
                     {/* <Text style={styles.light}>{item.worker.email}</Text> */}
                    
                   </View>
-                </TouchableOpacity>
+      
+        
+        {expanded && (
+          <View style={styles.expandedContent}>
+            
+            <View style={styles.updateContainer}>
+           
+    <Icon name="check-circle" size={20} color="#a06d95" marginLeft={2} />
+ 
+              <Text style={styles.updateText}>Appointment created</Text>
+              
+            </View>
+            <View style={styles.updateContainer}>
+  <Text style={styles.updateText}>work in Progress</Text>
+  <TouchableOpacity onPress={handleTaskDone}>
+    <Icon name="thumb-up" size={20} color="#a06d95" marginLeft={30} />
+  </TouchableOpacity>
+</View>
+
+            <View style={styles.updateContainer}>
+              <Text style={styles.updateText}>work completed</Text>
+            </View>
+            <View style={styles.updateContainer}>
+              <Text style={styles.updateText}>Payment done</Text>
+            </View>
+            {/* Include additional details here */}
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
               </View>
             )}
           />
           
-        </ScrollView>
+      
 
       </View>
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHomePress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
+          <Text style={styles.iconText}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
           <Ionicons name="list" size={24} color="#FFFFFF" />
+          <Text style={styles.iconText}>Active</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
           <Ionicons name="person-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.iconText}>Profile</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navbarButton} onPress={handleProfilePress}>
+          <Ionicons name="time-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.iconText}>History</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -142,7 +195,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 1.5)',
-    shadowColor: '#000',
+    shadowColor: '#8B1874',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -190,9 +243,9 @@ const styles = StyleSheet.create({
   navbar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'black',
+    backgroundColor: '#8B1874',
     width: 460,
-    height: 50,
+    height: 55,
     position: 'absolute',
     bottom: 6,
     
@@ -205,5 +258,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 1,
+  },
+  iconText: {
+    color: '#FFFFFF',
+    marginTop: 5, // Adjust as needed
+  },
+   updateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 3,
+    padding:10,
+    marginTop:10
+  },
+  updateText: {
+    marginLeft: 5,
   },
 });

@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Alert } from 'react-native';
 
 const Feedback = () => {
+  const [comment, setComment] = useState('');
   
   const handleSubmit = () => {
     // You can handle submission logic here, like sending the feedback to your backend
-    
+    if(comment!=''){
+    Alert.alert("Your feedback added successfully")
     console.log('Comment:', comment);
+    }
+    else
+    {
+      Alert.alert("Please add any comments")
+    }
     // Reset fields after submission
-    setRating(0);
+  
     setComment('');
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Feedback</Text>
+      <Text style={styles.heading}>Feel free to share any grievances you have regarding this customer.</Text>
       
       <TextInput
         placeholder="Enter your comment"
@@ -39,9 +47,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   heading: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
+    color:"#A06D95"
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -54,16 +63,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 100,
     borderWidth: 1,
-    borderColor: '#CCCCCC',
+    borderColor: '#A06D95',
     borderRadius: 5,
     padding: 10,
     marginBottom: 20,
   },
   submitButton: {
-    backgroundColor: 'black',
+    backgroundColor: '#A06D95',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    
   },
   submitButtonText: {
     color: 'white',
