@@ -8,6 +8,18 @@ import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import socket from '../utils/socket';
 import { useGlobalContext } from '../GlobalContext';
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 // import { useNavigation } from '@react-navigation/native';
 
@@ -35,6 +47,7 @@ const CustomerListPage = () => {
         console.log("list page")
         console.log(decodedToken)
         console.log("username", username);
+        registerForPushNotificationsAsync(userId);
         return { userId, username };
       } else {
         console.log('Token not found');
@@ -52,6 +65,61 @@ const CustomerListPage = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Request permissions for push notifications
+    console.log("Notifications")
+
+    // Handle incoming notifications
+    const notificationListener = Notifications.addNotificationReceivedListener(handleNotification);
+
+    // Handle notification response (e.g., user interaction)
+    const responseListener = Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
+
+    return () => {
+      notificationListener.remove();
+      responseListener.remove();
+    };
+  }, []);
+
+  const registerForPushNotificationsAsync = async (uid) => {
+    console.log("register for push notifications")
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    const { status } = await Notifications.requestPermissionsAsync();
+    console.log(status)
+    if (status !== 'granted') {
+      alert('Permission to receive push notifications has not been granted!');
+      return;
+    }
+
+
+    const token = (await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig.extra?.eas.projectId,
+    })).data;
+    console.log(token); // Send this token to your server to associate with the user
+
+    const requestBody = {
+      workerId: uid,
+      token
+    };
+    axios.post(`${process.env.EXPO_PUBLIC_API_URL}/emp/savetoken`, requestBody)
+  };
+  const handleNotification = (notification) => {
+    console.log(notification);
+    // Handle incoming notification while the app is running
+  };
+  const handleNotificationResponse = (response) => {
+    console.log(response);
+    // Handle notification response (e.g., user interaction)
+  };
+
   const handleLocation = () => {
     navigation.navigate('map')
   }
@@ -65,11 +133,11 @@ const CustomerListPage = () => {
       try {
         // const uid = getUserIdFromToken(); // You need to implement this function
         if (userId) {
-        const locationResponse = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/emp/location/${userId}`);
-         console.log("LOCATION___________",locationResponse.data)
+          const locationResponse = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/emp/location/${userId}`);
+          console.log("LOCATION___________", locationResponse.data)
           // setselfAddress(locationResponse.data.address);
           updateGlobalState({ address: locationResponse.data.address })
-          console.log("your address",address)
+          console.log("your address", address)
         }
       } catch (error) {
         console.log("Error fetching location", error);
@@ -185,7 +253,7 @@ const CustomerListPage = () => {
 
 
     <View style={styles.container}>
-    {/* <Icon name="account-circle" size={24} color="#333" style={{ marginRight: 8 }} />
+      {/* <Icon name="account-circle" size={24} color="#333" style={{ marginRight: 8 }} />
                       <Text style={styles.workerName}>{username}</Text> */}
       <View style={styles.header}>
         <Ionicons name="location" size={24} color="white" style={{ marginLeft: 10, marginTop: 14 }} onPress={handleLocation} />
@@ -194,8 +262,8 @@ const CustomerListPage = () => {
           {/* <Text style={styles.categoryTextsmall}></Text> */}
         </View>
         <View>
-           {/* <Icon name="account-circle" size={24} color="#333" style={{ marginLeft:250 ,marginTop:25}} /> */}
-                      <Text style={styles.workerName}>{username}</Text>
+          {/* <Icon name="account-circle" size={24} color="#333" style={{ marginLeft:250 ,marginTop:25}} /> */}
+          <Text style={styles.workerName}>{username}</Text>
         </View>
         {/* Add the rest of the header content here */}
       </View>
@@ -214,10 +282,10 @@ const CustomerListPage = () => {
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navbarButton} onPress={handlependinglistPress}>
           <Ionicons name="home-outline" size={24} color="#FFFFFF" />
-       
-      
 
-        <Text style={styles.iconText}>Home</Text>
+
+
+          <Text style={styles.iconText}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navbarButton} onPress={handleHistoryPress}>
           <Ionicons name="list" size={24} color="#FFFFFF" />
@@ -370,8 +438,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 0,
     color: 'white', // Darker text color
-    padding:5,
-    marginLeft:280,
+    padding: 5,
+    marginLeft: 280,
     // marginTop:25
   },
   iconText: {
