@@ -124,6 +124,21 @@ const Bidding = ({ route }) => {
   }, []);
 
   useEffect(() => {
+    // Request permissions for push notifications
+    if (roomId) {
+      console.log("------------------Worker Online--------------------", roomId)
+      socket.emit("worker_online", roomId);
+    }
+    return () => {
+      if (roomId) {
+        console.log("------------------Worker Offline--------------------", roomId)
+        socket.emit("worker_offline", roomId);
+      }
+    };
+  }, [roomId]);
+  
+
+  useEffect(() => {
     async function fetchData() {
       try {
         if (uid) {
